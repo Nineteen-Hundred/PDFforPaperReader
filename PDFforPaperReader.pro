@@ -38,7 +38,8 @@ SOURCES += \
     embeddedfiles.cpp \
     fonts.cpp \
     info.cpp \
-    main_viewer.cpp
+    main_viewer.cpp \
+    annoprocessor.cpp
 
 HEADERS += \
     abstractinfodock.h \
@@ -53,7 +54,8 @@ HEADERS += \
     documentobserver.h \
     embeddedfiles.h \
     fonts.h \
-    info.h
+    info.h \
+    annoprocessor.h
 
 
 # Default rules for deployment.
