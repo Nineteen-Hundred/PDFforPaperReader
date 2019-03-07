@@ -2,8 +2,7 @@
 #define ANNOPROCESSOR_H
 #include <QObject>
 
-
-class AnnoProcessor
+class AnnoProcessor : public QObject
 {
     Q_OBJECT
 public:
