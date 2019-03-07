@@ -25,64 +25,36 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11, link_pkgconfig
 
 SOURCES += \
+    abstractinfodock.cpp \
+    permissions.cpp \
     thumbnails.cpp \
     toc.cpp \
     viewer.cpp \
-    permissions.cpp \
-    abstractinfodock.cpp \
-    documentobserver.cpp \
-    embeddedfiles.cpp \
-    fonts.cpp \
-    info.cpp \
-    main_viewer.cpp \
     metadata.cpp \
     navigationtoolbar.cpp \
     optcontent.cpp \
     pageview.cpp \
-    abstractinfodock.cpp \
     documentobserver.cpp \
     embeddedfiles.cpp \
     fonts.cpp \
     info.cpp \
-    main_viewer.cpp \
-    metadata.cpp \
-    navigationtoolbar.cpp \
-    optcontent.cpp \
-    pageview.cpp \
-    permissions.cpp \
-    qrc_background.cpp \
-    thumbnails.cpp \
-    toc.cpp \
-    viewer.cpp
+    main_viewer.cpp
 
 HEADERS += \
-    thumbnails.h \
-    toc.h \
-    viewer.h \
-    permissions.h \
     abstractinfodock.h \
-    documentobserver.h \
-    embeddedfiles.h \
-    fonts.h \
-    info.h \
-    metadata.h \
-    navigationtoolbar.h \
-    optcontent.h \
-    pageview.h \
-    abstractinfodock.h \
-    documentobserver.h \
-    embeddedfiles.h \
-    fonts.h \
-    info.h \
-    metadata.h \
-    moc_predefs.h \
-    navigationtoolbar.h \
-    optcontent.h \
-    pageview.h \
     permissions.h \
     thumbnails.h \
     toc.h \
     viewer.h \
+    metadata.h \
+    navigationtoolbar.h \
+    optcontent.h \
+    pageview.h \
+    documentobserver.h \
+    embeddedfiles.h \
+    fonts.h \
+    info.h
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -90,3 +62,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 PKGCONFIG += poppler-qt5
+
+DISTFILES += \
+    theme.qss
