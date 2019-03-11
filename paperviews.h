@@ -1,4 +1,4 @@
-#ifndef PAPERVIEWS_H
+﻿#ifndef PAPERVIEWS_H
 #define PAPERVIEWS_H
 
 #include <QGraphicsScene>
@@ -17,38 +17,56 @@
 #include <QtMath>
 #include <QLabel>
 #include <QGraphicsProxyWidget>
+#include <QStackedWidget>
 
 class MainFrame;
 
-class PaperPage : public QGraphicsItem
+class PaperWidget : public QWidget
 {
+    friend class MainScene;
+    friend class GraphicsView;
 public:
-    PaperPage(Poppler::Page *page);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
-
-protected:
-    QRectF boundingRect() const override;
+    PaperWidget();
 
 private:
-    Poppler::Page *page;
+    QList<QLabel *> pages;
+};
+
+class PaperWidgets : public QStackedWidget
+{
+    friend class MainScene;
+    friend class MainFrame;
+    friend class GraphicsView;
+public:
+    PaperWidgets();
+
+private:
+    PaperWidget *normalwidget, *scaledwidget;
 };
 
 class MainScene : public QGraphicsScene
 {
+    friend class MainFrame;
+    friend class GraphicsView;
 public:
     MainScene();
     void loadFile(const QString &addr);
     void refreshView(qreal scale);
     void drawAnnotations();
-    QList<PaperPage *> pages;
     QList<QGraphicsItem *> annotations;
     QTimer *refreshtimer;
+    void updateSize();
+    int xres;
+    int yres;
+    double width;
+    double height;
+    double scale = 1;
 
 private:
     Poppler::Document *document;
+    PaperWidgets *paperwidgets;
+    QGraphicsProxyWidget *paperproxywidget;
 };
-
-
 
 class SideScene : public QGraphicsScene
 {
@@ -77,8 +95,7 @@ class MainFrame : public QFrame
 public:
     MainFrame();
     QGraphicsView *view() const;
-    void zoomin(int level=1);
-    void zoomout(int level=1);
+    void zoom();
     void setMatrix(qreal deltascale, qreal deltarotate);
 
 private:

@@ -21,8 +21,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QSplitter *leftSpliter, *centerSpliter, *rightSpliter, *totalSpliter;
-    MainScene *mainview;
-    SideScene *leftview, *rightview;
+    MainScene *mainscene;
+    SideScene *leftscene, *rightscene;
 
 private:
     Ui::MainWindow *ui;
