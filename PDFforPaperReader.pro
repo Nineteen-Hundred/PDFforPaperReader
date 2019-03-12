@@ -28,11 +28,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    paperviews.cpp
+    paperviews.cpp \
+    paperannotation.cpp
 
 HEADERS += \
         mainwindow.h \
-    paperviews.h
+    paperviews.h \
+    paperannotation.h
 
 FORMS += \
         mainwindow.ui

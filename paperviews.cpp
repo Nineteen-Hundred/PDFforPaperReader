@@ -19,6 +19,18 @@ void MainScene::loadFile(const QString &addr)
         return;
     }
 
+    for(int i=0;i<document->page(1)->annotations().length();i++)
+    {
+        if(document->page(1)->annotations().at(i)->subType()==1)
+        {
+//            for(int j=0;j<((Poppler::TextAnnotation *)(document->page(1)->annotations().at(i)))->calloutPoints().length();j++)
+//            {
+//                qDebug() << ((Poppler::TextAnnotation *)(document->page(1)->annotations().at(i)))->calloutPoints().at(j).x()
+//                         << ((Poppler::TextAnnotation *)(document->page(1)->annotations().at(i)))->calloutPoints().at(j).y();
+//            }
+        }
+    }
+
     paperwidgets->normalwidget->pages.clear();
     paperwidgets->scaledwidget->pages.clear();
     document->setRenderHint(Poppler::Document::TextAntialiasing, 1);
@@ -78,6 +90,7 @@ void MainScene::updateSize()
     setSceneRect(0, 0, width, height);
 
     paperproxywidget->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    paperproxywidget->setFlag(QGraphicsItem::ItemIsMovable, true);
 }
 
 MainFrame::MainFrame()
@@ -89,7 +102,7 @@ MainFrame::MainFrame()
 
     connect(graphicsview, &GraphicsView::sizeChanged, this, &MainFrame::setMatrix);
 
-    graphicsview->setDragMode(QGraphicsView::RubberBandDrag);
+    graphicsview->setDragMode(QGraphicsView::ScrollHandDrag);
     graphicsview->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
     graphicsview->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }

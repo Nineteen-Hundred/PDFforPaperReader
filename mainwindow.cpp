@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     totalSpliter->addWidget(rightSpliter);
     this->setCentralWidget(totalSpliter);
 
-    QString filename = "/home/pysong/下载/提升高校科研经费管理水平的思考_李代萍.pdf";
+    QString filename = "/home/pysong/下载/A Very Brief Introduction to Machine Learning With Applications to Communication Systems.pdf";
     mainscene->loadFile(filename);
 }
 
