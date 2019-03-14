@@ -18,6 +18,7 @@
 #include <QLabel>
 #include <QGraphicsProxyWidget>
 #include <QStackedWidget>
+#include <paperannotation.h>
 
 class MainFrame;
 

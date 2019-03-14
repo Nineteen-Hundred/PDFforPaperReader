@@ -19,18 +19,6 @@ void MainScene::loadFile(const QString &addr)
         return;
     }
 
-    for(int i=0;i<document->page(1)->annotations().length();i++)
-    {
-        if(document->page(1)->annotations().at(i)->subType()==1)
-        {
-//            for(int j=0;j<((Poppler::TextAnnotation *)(document->page(1)->annotations().at(i)))->calloutPoints().length();j++)
-//            {
-//                qDebug() << ((Poppler::TextAnnotation *)(document->page(1)->annotations().at(i)))->calloutPoints().at(j).x()
-//                         << ((Poppler::TextAnnotation *)(document->page(1)->annotations().at(i)))->calloutPoints().at(j).y();
-//            }
-        }
-    }
-
     paperwidgets->normalwidget->pages.clear();
     paperwidgets->scaledwidget->pages.clear();
     document->setRenderHint(Poppler::Document::TextAntialiasing, 1);
@@ -63,10 +51,27 @@ void MainScene::loadFile(const QString &addr)
     paperwidgets->addWidget(paperwidgets->scaledwidget);
     paperwidgets->setCurrentWidget(paperwidgets->scaledwidget);
     paperproxywidget = addWidget(paperwidgets);
+    paperproxywidget->setPos(0, 0);
+    paperproxywidget->setZValue(-100);
+
+    for(int i=0;i<document->page(1)->annotations().length();i++)
+    {
+        if(document->page(1)->annotations().at(i)->subType()==1)
+        {
+            Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(document->page(1)->annotations().at(i));
+            if(annotation->textType()==1)
+            {
+                qDebug() << "once";
+                PaperAnnotation::FlatTextAnnotation *anno = new PaperAnnotation::FlatTextAnnotation(annotation, width, height/document->numPages());
+                this->addItem(anno);
+            }
+        }
+    }
 }
 
 void MainScene::updateSize()
 {
+
     refreshtimer->stop();
     paperwidgets->removeWidget(paperwidgets->scaledwidget);
     delete paperwidgets->scaledwidget;
@@ -90,7 +95,9 @@ void MainScene::updateSize()
     setSceneRect(0, 0, width, height);
 
     paperproxywidget->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
-    paperproxywidget->setFlag(QGraphicsItem::ItemIsMovable, true);
+    paperproxywidget->setFlag(QGraphicsItem::ItemIsMovable, false);
+    paperproxywidget->setFlag(QGraphicsItem::ItemIsSelectable, false);
+    paperproxywidget->setZValue(-100);
 }
 
 MainFrame::MainFrame()
@@ -120,16 +127,12 @@ void MainFrame::setMatrix(qreal deltascale, qreal deltarotate)
     ((MainScene *)graphicsview->scene())->paperproxywidget->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
     ((MainScene *)graphicsview->scene())->paperwidgets->setCurrentWidget(
             ((MainScene *)graphicsview->scene())->paperwidgets->normalwidget);
+    ((MainScene *)graphicsview->scene())->paperproxywidget->setZValue(-100);
     ((MainScene *)graphicsview->scene())->scale = scale;
 
-    QMatrix matrix;
-    matrix.scale(scale, scale);
-    matrix.rotate(deltarotate);
-
-    graphicsview->setMatrix(matrix);
-
     ((MainScene *)graphicsview->scene())->refreshtimer->stop();
-    ((MainScene *)graphicsview->scene())->refreshtimer->start(200);
+    ((MainScene *)graphicsview->scene())->refreshtimer->start(500);
+
 }
 
 SideScene::SideScene()
@@ -144,16 +147,20 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
         if(ev->delta()>0)
         {
             emit sizeChanged(1.2, 0);
+            scale(1.2, 1.2);
         }
         else
         {
+            scale(0.8, 0.8);
             emit sizeChanged(0.8, 0);
         }
         ev->accept();
+
     }
     else
     {
         QGraphicsView::wheelEvent(ev);
+
     }
 }
 
