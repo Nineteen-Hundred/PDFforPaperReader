@@ -5,13 +5,9 @@ void PaperAnnotation::FlatTextAnnotation::paint(QPainter *painter, const QStyleO
 {
     painter->setPen(Qt::red);
     painter->setFont(annotation->textFont());
-    painter->drawText(QRectF(annotation->boundary().x()*width*scale,
-                             annotation->boundary().y()*height*scale,
-                             annotation->boundary().width()*width*scale,
-                             annotation->boundary().height()*height*scale), annotation->contents());
-    setPos(annotation->boundary().x()*scale, annotation->boundary().y()*scale);
-
-    setZValue(10);
+    painter->drawText(QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().width()*height*scale),
+                      annotation->contents());
+    setPos(annotation->boundary().x()*width*scale, annotation->boundary().y()*height*scale);
 }
 
 PaperAnnotation::Annotation::Annotation() {setAcceptHoverEvents(true);}

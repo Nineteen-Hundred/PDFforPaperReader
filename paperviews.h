@@ -22,37 +22,15 @@
 
 class MainFrame;
 
-//class PaperWidget : public QWidget
-//{
-//    friend class MainScene;
-//    friend class GraphicsView;
-//public:
-//    PaperWidget();
-
-//private:
-//    QList<QLabel *> pages;
-//};
-
-//class PaperWidgets : public QStackedWidget
-//{
-//    friend class MainScene;
-//    friend class MainFrame;
-//    friend class GraphicsView;
-//public:
-//    PaperWidgets();
-
-//private:
-//    PaperWidget *normalwidget, *scaledwidget;
-//};
-
 class PaperItem : public QGraphicsItem
 {
 public:
     PaperItem(int index, QImage *image) {this->index=index; this->image = image;}
+    ~PaperItem() override;
     QImage *image;
     int index;
-    QRectF boundingRect()const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    virtual QRectF boundingRect()const override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 };
 
 class MainScene : public QGraphicsScene
@@ -100,6 +78,7 @@ private:
     qreal scalefactor = 1;
     void updateSize();
     QTimer *refreshtimer;
+    QPointF point;
 
 signals:
     void sizeChanged(qreal deltascale, qreal rotate);

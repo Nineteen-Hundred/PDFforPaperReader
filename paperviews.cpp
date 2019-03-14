@@ -79,6 +79,8 @@ void MainScene::loadFile(const QString &addr)
             }
         }
     }
+
+    setSceneRect(0, 0, width, height);
 }
 
 void MainScene::updateSize()
@@ -145,7 +147,6 @@ GraphicsView *MainFrame::view() const
 
 void MainFrame::setMatrix(qreal deltascale, qreal deltarotate)
 {
-
     //    scale*= deltascale;
     //    ((MainScene *)graphicsview->scene())->paperwidgets->setFixedWidth(((MainScene *)graphicsview->scene())->width);
     //    ((MainScene *)graphicsview->scene())->paperwidgets->setFixedHeight(((MainScene *)graphicsview->scene())->height);
@@ -157,7 +158,6 @@ void MainFrame::setMatrix(qreal deltascale, qreal deltarotate)
 
     //    ((MainScene *)graphicsview->scene())->refreshtimer->stop();
     //    ((MainScene *)graphicsview->scene())->refreshtimer->start(500);
-
 }
 
 SideScene::SideScene()
@@ -177,6 +177,7 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
     {
         if(ev->delta()>0)
         {
+            point = mapToScene(QPoint(this->x()*1.2+this->width()/2*1.2, this->y()*1.2+this->height()/2*1.2));
             scale(1.2, 1.2);
             scalefactor*=1.2;
             refreshtimer->stop();
@@ -184,8 +185,9 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
         }
         else
         {
+            point = mapToScene(QPoint(this->x()*0.8+this->width()/2*0.8, this->y()*0.8+this->height()/2*0.8));
             scale(0.8, 0.8);
-            scalefactor/=1.2;
+            scalefactor*=0.8;
             refreshtimer->stop();
             refreshtimer->start(500);
         }
@@ -220,6 +222,11 @@ void GraphicsView::updateSize()
 //        scene->pages.at(i)->update();
 //    }
 
+    QMatrix matrix;
+    matrix.scale(1, 1);
+    matrix.rotate(0);
+    setMatrix(matrix);
+
     scene->clear();
     scene->pages.clear();
     for(int i=0; i<scene->document->numPages(); i++)
@@ -227,20 +234,19 @@ void GraphicsView::updateSize()
         QImage *image = new QImage(scene->document->page(i)->renderToImage(scene->xres*scalefactor, scene->yres*scalefactor, -1, -1, -1, -1));
         if(i==0)
         {
-            scene->width = image->width()*scalefactor;
-            scene->height = image->height()*scalefactor*scene->document->numPages();
+            scene->width = image->width();
+            scene->height = image->height()*scene->document->numPages();
         }
         scene->pages.append(new PaperItem(i, image));
         scene->addItem(scene->pages.at(i));
-        update();
     }
 
-    scene->setSceneRect(0, 0, scene->width*scalefactor, scene->height*scalefactor);
+    scene->setSceneRect(0, 0, scene->width, scene->height);
+}
 
-    QMatrix matrix;
-    matrix.scale(1, 1);
-    matrix.rotate(0);
-    setMatrix(matrix);
+PaperItem::~PaperItem()
+{
+    delete image;
 }
 
 QRectF PaperItem::boundingRect() const
@@ -251,6 +257,5 @@ QRectF PaperItem::boundingRect() const
 void PaperItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     painter->drawImage(0, 0, *image);
-    setPos(0, image->height()*index);
-    setZValue(-10);
+    setPos(QPoint(0, image->height()*index));
 }
