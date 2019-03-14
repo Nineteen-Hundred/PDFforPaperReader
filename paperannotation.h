@@ -47,7 +47,7 @@ class FlatTextAnnotation : public Annotation
 {
 public:
     FlatTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    QRectF boundingRect()const override {return QRectF(annotation->boundary().x()*width, annotation->boundary().y()*height, annotation->boundary().width()*width, annotation->boundary().height()*height);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     Poppler::TextAnnotation *annotation;

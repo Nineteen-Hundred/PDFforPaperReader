@@ -30,7 +30,7 @@ void MainScene::loadFile(const QString &addr)
         paperwidgets->normalwidget->pages.append(new QLabel());
         paperwidgets->scaledwidget->pages.append(new QLabel());
         auto image = document->page(i)->renderToImage(xres, yres, -1, -1, -1, -1, Poppler::Page::Rotate0);
-        if(i==1)
+        if(i==0)
         {
             width = image.width();
             height = image.height()*document->numPages();
@@ -71,12 +71,13 @@ void MainScene::loadFile(const QString &addr)
 
 void MainScene::updateSize()
 {
-
+    qDebug() << "update once";
     refreshtimer->stop();
     paperwidgets->removeWidget(paperwidgets->scaledwidget);
     delete paperwidgets->scaledwidget;
     paperwidgets->scaledwidget = new PaperWidget();
     QVBoxLayout *layout = new QVBoxLayout();
+
     for(int i=0; i<document->numPages();i++)
     {
         paperwidgets->scaledwidget->pages.append(new QLabel());
@@ -85,11 +86,11 @@ void MainScene::updateSize()
         paperwidgets->scaledwidget->pages.at(i)->resize(image.size());
         layout->addWidget(paperwidgets->scaledwidget->pages.at(i));
     }
+
     layout->setAlignment(Qt::AlignTop);
     paperwidgets->scaledwidget->setLayout(layout);
     paperwidgets->addWidget(paperwidgets->scaledwidget);
     paperwidgets->setCurrentWidget(paperwidgets->scaledwidget);
-    //paperwidgets->setFixedSize(width*scale, height*scale*document->numPages());
     paperwidgets->setFixedWidth(width*scale);
     paperwidgets->setFixedHeight(height*scale);
     setSceneRect(0, 0, width, height);
@@ -97,6 +98,7 @@ void MainScene::updateSize()
     paperproxywidget->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
     paperproxywidget->setFlag(QGraphicsItem::ItemIsMovable, false);
     paperproxywidget->setFlag(QGraphicsItem::ItemIsSelectable, false);
+    paperproxywidget->setPos(0, 0);
     paperproxywidget->setZValue(-100);
 }
 
@@ -121,17 +123,7 @@ QGraphicsView *MainFrame::view() const
 
 void MainFrame::setMatrix(qreal deltascale, qreal deltarotate)
 {
-    scale*= deltascale;
-    ((MainScene *)graphicsview->scene())->paperwidgets->setFixedWidth(((MainScene *)graphicsview->scene())->width);
-    ((MainScene *)graphicsview->scene())->paperwidgets->setFixedHeight(((MainScene *)graphicsview->scene())->height);
-    ((MainScene *)graphicsview->scene())->paperproxywidget->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
-    ((MainScene *)graphicsview->scene())->paperwidgets->setCurrentWidget(
-            ((MainScene *)graphicsview->scene())->paperwidgets->normalwidget);
-    ((MainScene *)graphicsview->scene())->paperproxywidget->setZValue(-100);
-    ((MainScene *)graphicsview->scene())->scale = scale;
 
-    ((MainScene *)graphicsview->scene())->refreshtimer->stop();
-    ((MainScene *)graphicsview->scene())->refreshtimer->start(500);
 
 }
 
@@ -145,17 +137,33 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
     if(ev->modifiers() & Qt::ControlModifier)
     {
         if(ev->delta()>0)
-        {
-            emit sizeChanged(1.2, 0);
+        {            
             scale(1.2, 1.2);
+            scalefactor*= 1.2;
         }
         else
         {
             scale(0.8, 0.8);
-            emit sizeChanged(0.8, 0);
+            scalefactor/= 1.2;
         }
-        ev->accept();
 
+        MainScene *mainscene = ((MainScene *)scene());
+        mainscene->paperwidgets->setFixedWidth(mainscene->width);
+        mainscene->paperwidgets->setFixedHeight(mainscene->height);
+        mainscene->paperproxywidget->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
+        mainscene->paperwidgets->setCurrentWidget(
+                mainscene->paperwidgets->normalwidget);
+        mainscene->paperproxywidget->setZValue(-100);
+        mainscene->scale = scalefactor;
+        mainscene->yaxis = mapToScene(ev->pos()).y();
+
+        if(mainscene->refreshtimer->isActive())
+        {
+            mainscene->refreshtimer->stop();
+        }
+        mainscene->refreshtimer->start(200);
+
+        ev->accept();
     }
     else
     {

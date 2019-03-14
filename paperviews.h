@@ -62,6 +62,7 @@ public:
     double width;
     double height;
     double scale = 1;
+    int yaxis = 0;
 
 private:
     Poppler::Document *document;
@@ -86,6 +87,7 @@ protected:
 
 private:
     MainFrame *frame;
+    qreal scalefactor = 1;
 
 signals:
     void sizeChanged(qreal deltascale, qreal rotate);
@@ -100,7 +102,6 @@ public:
     void setMatrix(qreal deltascale, qreal deltarotate);
 
 private:
-    double scale = 1;
     GraphicsView *graphicsview;
 };
 
