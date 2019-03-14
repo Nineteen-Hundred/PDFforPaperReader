@@ -22,27 +22,37 @@
 
 class MainFrame;
 
-class PaperWidget : public QWidget
+//class PaperWidget : public QWidget
+//{
+//    friend class MainScene;
+//    friend class GraphicsView;
+//public:
+//    PaperWidget();
+
+//private:
+//    QList<QLabel *> pages;
+//};
+
+//class PaperWidgets : public QStackedWidget
+//{
+//    friend class MainScene;
+//    friend class MainFrame;
+//    friend class GraphicsView;
+//public:
+//    PaperWidgets();
+
+//private:
+//    PaperWidget *normalwidget, *scaledwidget;
+//};
+
+class PaperItem : public QGraphicsItem
 {
-    friend class MainScene;
-    friend class GraphicsView;
 public:
-    PaperWidget();
-
-private:
-    QList<QLabel *> pages;
-};
-
-class PaperWidgets : public QStackedWidget
-{
-    friend class MainScene;
-    friend class MainFrame;
-    friend class GraphicsView;
-public:
-    PaperWidgets();
-
-private:
-    PaperWidget *normalwidget, *scaledwidget;
+    PaperItem(int index, QImage *image) {this->index=index; this->image = image;}
+    QImage *image;
+    int index;
+    QRectF boundingRect()const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 };
 
 class MainScene : public QGraphicsScene
@@ -54,7 +64,7 @@ public:
     void loadFile(const QString &addr);
     void refreshView(qreal scale);
     void drawAnnotations();
-    QList<QGraphicsItem *> annotations;
+    QList<PaperAnnotation::Annotation *> annotations;
     QTimer *refreshtimer;
     void updateSize();
     int xres;
@@ -65,7 +75,8 @@ public:
 
 private:
     Poppler::Document *document;
-    PaperWidgets *paperwidgets;
+    //PaperWidgets *paperwidgets;
+    QList<PaperItem *> pages;
     QGraphicsProxyWidget *paperproxywidget;
 };
 
@@ -79,13 +90,16 @@ class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    GraphicsView(MainFrame *frame) : QGraphicsView(), frame(frame) { }
+    GraphicsView(MainFrame *frame);
 
 protected:
     virtual void wheelEvent(QWheelEvent *ev) override;
 
 private:
     MainFrame *frame;
+    qreal scalefactor = 1;
+    void updateSize();
+    QTimer *refreshtimer;
 
 signals:
     void sizeChanged(qreal deltascale, qreal rotate);
@@ -95,7 +109,7 @@ class MainFrame : public QFrame
 {
 public:
     MainFrame();
-    QGraphicsView *view() const;
+    GraphicsView *view() const;
     void zoom();
     void setMatrix(qreal deltascale, qreal deltarotate);
 

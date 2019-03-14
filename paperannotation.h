@@ -17,6 +17,7 @@ public:
     Annotation();
     virtual QRectF boundingRect()const override = 0;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override = 0;
+    qreal scale = 1;
 };
 
 class HighlightAnnotation : public Annotation
@@ -47,7 +48,7 @@ class FlatTextAnnotation : public Annotation
 {
 public:
     FlatTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    QRectF boundingRect()const override {return QRectF(annotation->boundary().x()*width*scale, annotation->boundary().y()*height*scale, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     Poppler::TextAnnotation *annotation;
