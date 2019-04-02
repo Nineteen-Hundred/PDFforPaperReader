@@ -9,22 +9,27 @@
 #include <QPainter>
 #include <QRect>
 #include <QDebug>
+#include <annotationdialog.h>
+#include <QContextMenuEvent>
+#include <QMutableLinkedListIterator>
+#include <QObject>
 
 namespace PaperAnnotation {
-class Annotation : public QGraphicsItem
+class Annotation : public QGraphicsItem, public QObject
 {
 public:
     Annotation();
     virtual QRectF boundingRect()const override = 0;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override = 0;
     qreal scale = 1;
+    int index = 0;
 };
 
 class HighlightAnnotation : public Annotation
 {
 public:
     HighlightAnnotation(Poppler::HighlightAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
@@ -36,7 +41,7 @@ class PopupTextAnnotation : public Annotation
 {
 public:
     PopupTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
@@ -47,19 +52,35 @@ private:
 class FlatTextAnnotation : public Annotation
 {
 public:
-    FlatTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
+    FlatTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height) {
+        this->index = index;
+        this->annotation = annotation; this->width = width; this->height = height;
+        setPos(annotation->boundary().x()*width*scale,
+               annotation->boundary().y()*height*scale +index*height);
+    }
+    QRectF boundingRect()const override
+    {return QRectF(0, 0, annotation->boundary().width()*width*scale,
+                   annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
     Poppler::TextAnnotation *annotation;
     int height, width = 0;
+
+private:
+    bool isMoving = false;
+    void setNewStyle(const QString &text, const QFont &font, const QColor &color);
 };
 
 class LinkedTextAnnotation : public Annotation
 {
 public:
-    LinkedTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    LinkedTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {
+        setPos(annotation->boundary().x()*width*scale, annotation->boundary().y()*height*scale);
+        this->annotation = annotation; this->width = width; this->height = height;
+    }
+    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
@@ -70,12 +91,20 @@ private:
 class GeomAnnotation : public Annotation
 {
 public:
-    GeomAnnotation(Poppler::GeomAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    GeomAnnotation(int index, Poppler::GeomAnnotation *annotation, int width, int height) {
+        this->index = index;
+        this->annotation = annotation; this->width = width; this->height = height;
+        setPos(annotation->boundary().x()*width*scale,
+               annotation->boundary().y()*height*scale +index*height);
+    }
+    QRectF boundingRect()const override
+    {return QRectF(0, 0, annotation->boundary().width()*width*scale,
+                   annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    QPainterPath shape() const override;
 
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
-private:
     Poppler::GeomAnnotation *annotation;
     int height, width = 0;
 };
@@ -84,7 +113,7 @@ class LinkAnnotation : public Annotation
 {
 public:
     LinkAnnotation(Poppler::LinkAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
@@ -96,7 +125,7 @@ class InkAnnotation : public Annotation
 {
 public:
     InkAnnotation(Poppler::InkAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
@@ -107,12 +136,19 @@ private:
 class LineAnnotation : public Annotation
 {
 public:
-    LineAnnotation(Poppler::LineAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(annotation->boundary().x(), annotation->boundary().y(), annotation->boundary().width(), annotation->boundary().height());}
+    LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height);
+    QRectF boundingRect()const override
+    {return QRectF(0, 0, annotation->boundary().width()*width*scale,
+                   annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-private:
+    //void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+
     Poppler::LineAnnotation *annotation;
     int height, width = 0;
+
+private:
+    QPointF startPoint;
+    QPointF endPoint;
 };
 }

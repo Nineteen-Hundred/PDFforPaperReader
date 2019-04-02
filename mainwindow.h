@@ -23,6 +23,7 @@ public:
     QSplitter *leftSpliter, *centerSpliter, *rightSpliter, *totalSpliter;
     MainScene *mainscene;
     SideScene *leftscene, *rightscene;
+    QThread *scenethread;
 
 private:
     Ui::MainWindow *ui;

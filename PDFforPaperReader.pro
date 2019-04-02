@@ -29,12 +29,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     paperviews.cpp \
-    paperannotation.cpp
+    paperannotation.cpp \
+    annotationdialog.cpp
 
 HEADERS += \
         mainwindow.h \
     paperviews.h \
-    paperannotation.h
+    paperannotation.h \
+    annotationdialog.h
 
 FORMS += \
         mainwindow.ui

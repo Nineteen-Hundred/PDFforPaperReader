@@ -25,7 +25,7 @@ class MainFrame;
 class PaperItem : public QGraphicsItem
 {
 public:
-    PaperItem(int index, QImage *image) {this->index=index; this->image = image;}
+    PaperItem(int index, QImage *image) {this->index=index; this->image = image; setZValue(-10);}
     ~PaperItem() override;
     QImage *image;
     int index;
@@ -69,16 +69,19 @@ class GraphicsView : public QGraphicsView
     Q_OBJECT
 public:
     GraphicsView(MainFrame *frame);
+    void setScene(MainScene *scene);
+    QTimer *refreshtimer;
+    void updateSize();
+    MainScene *mainscene;
 
 protected:
-    virtual void wheelEvent(QWheelEvent *ev) override;
+    virtual void wheelEvent(QWheelEvent *ev) override; 
 
 private:
     MainFrame *frame;
-    qreal scalefactor = 1;
-    void updateSize();
-    QTimer *refreshtimer;
+    qreal scalefactor = 1; 
     QPointF point;
+
 
 signals:
     void sizeChanged(qreal deltascale, qreal rotate);
@@ -90,7 +93,6 @@ public:
     MainFrame();
     GraphicsView *view() const;
     void zoom();
-    void setMatrix(qreal deltascale, qreal deltarotate);
 
 private:
     double scale = 1;

@@ -10,6 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
     removeToolBar(ui->mainToolBar);
 
     mainscene = new MainScene();
+//    scenethread = new QThread;
+//    mainscene->moveToThread(scenethread);
+//    scenethread->start();
 
     leftscene = new SideScene();
     rightscene = new SideScene();
@@ -28,7 +31,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setCentralWidget(totalSpliter);
 
     QString filename = "/home/pysong/下载/A Very Brief Introduction to Machine Learning With Applications to Communication Systems.pdf";
+    //QString filename = "/home/pysong/下载/finalpaperfile.pdf";
     mainscene->loadFile(filename);
+
+    connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view(), &GraphicsView::updateSize);
+    connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view()->mainscene, &MainScene::updateSize);
 }
 
 MainWindow::~MainWindow()
