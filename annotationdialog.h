@@ -79,10 +79,11 @@ class GeomDialog : public Dialog
 {
     Q_OBJECT
 public:
-    GeomDialog(const QColor &color);
-    QPushButton *submitBtn = new QPushButton(tr("Ensure"));
-    QPushButton *deleteBtn = new QPushButton(tr("Delete"));
-    QPushButton *cancelBtn = new QPushButton(tr("Cancle"));
+    GeomDialog(const QColor &color, int linewidth);
+    QComboBox *box;
+    QPushButton *submitBtn;
+    QPushButton *deleteBtn;
+    QPushButton *cancelBtn;
 
     void emitConfig();
     void emitDelete();
@@ -90,7 +91,19 @@ public:
     ColorBlocks *blocks;
 
 signals:
-    void configUpdated(const QColor &color);
+    void configUpdated(const QColor &color, int linewidth);
     void itemDeleted();
+};
+
+class LineDialog : public GeomDialog
+{
+    Q_OBJECT
+public:
+    LineDialog(const QColor &color, int linewidth, int linetype);
+    void emitConfig();
+    void emitDelete();
+
+signals:
+    void configUpdated(const QColor &color, int linetype);
 };
 }

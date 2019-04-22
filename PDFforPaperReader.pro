@@ -30,13 +30,15 @@ SOURCES += \
         mainwindow.cpp \
     paperviews.cpp \
     paperannotation.cpp \
-    annotationdialog.cpp
+    annotationdialog.cpp \
+    annotoolbar.cpp
 
 HEADERS += \
         mainwindow.h \
     paperviews.h \
     paperannotation.h \
-    annotationdialog.h
+    annotationdialog.h \
+    annotoolbar.h
 
 FORMS += \
         mainwindow.ui
@@ -48,3 +50,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += poppler-qt5
+
+RESOURCES += \
+    images.qrc

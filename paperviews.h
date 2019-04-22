@@ -19,6 +19,7 @@
 #include <QGraphicsProxyWidget>
 #include <QStackedWidget>
 #include <paperannotation.h>
+#include <QAction>
 
 class MainFrame;
 
@@ -50,6 +51,20 @@ public:
     double width;
     double height;
     double scale = 1;
+    bool isDrawing = false;
+    bool isPressing = false;
+    int shape = 0;
+
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    void changeIsDrawing();
+    void setCurrentShape(int i);
+    QGraphicsLineItem *tmplineitem;
+    QGraphicsEllipseItem *tmpellipseitem;
+    QGraphicsRectItem *tmprectitem;
+    QGraphicsTextItem *tmptextitem;
+    QPointF startPoint, endPoint;
 
 private:
     Poppler::Document *document;
@@ -73,6 +88,7 @@ public:
     QTimer *refreshtimer;
     void updateSize();
     MainScene *mainscene;
+    void changeCursor(bool isDrawing);
 
 protected:
     virtual void wheelEvent(QWheelEvent *ev) override; 

@@ -13,6 +13,8 @@
 #include <QContextMenuEvent>
 #include <QMutableLinkedListIterator>
 #include <QObject>
+#include <QGraphicsSceneHoverEvent>
+#include <qmath.h>
 
 namespace PaperAnnotation {
 class Annotation : public QGraphicsItem, public QObject
@@ -23,6 +25,8 @@ public:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override = 0;
     qreal scale = 1;
     int index = 0;
+    bool isInResizeArea(const QPointF& pos);
+    bool m_bIsResizing = false;
 };
 
 class HighlightAnnotation : public Annotation
@@ -56,7 +60,7 @@ public:
         this->index = index;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
-               annotation->boundary().y()*height*scale +index*height);
+               annotation->boundary().y()*height*scale +index*scale*height);
     }
     QRectF boundingRect()const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
@@ -64,6 +68,10 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
     Poppler::TextAnnotation *annotation;
     int height, width = 0;
@@ -95,7 +103,7 @@ public:
         this->index = index;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
-               annotation->boundary().y()*height*scale +index*height);
+               annotation->boundary().y()*height*scale +index*scale*height);
     }
     QRectF boundingRect()const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
@@ -104,6 +112,11 @@ public:
     QPainterPath shape() const override;
 
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    void setNewStyle(const QColor &color, int width);
 
     Poppler::GeomAnnotation *annotation;
     int height, width = 0;
@@ -137,15 +150,22 @@ class LineAnnotation : public Annotation
 {
 public:
     LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height);
+    QPainterPath shape() const override;
     QRectF boundingRect()const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
                    annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-    //void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    bool isInResizeArea(const QPointF& pos);
 
     Poppler::LineAnnotation *annotation;
     int height, width = 0;
+    void setNewStyle(const QColor &color, int width);
 
 private:
     QPointF startPoint;

@@ -8,6 +8,7 @@
 #include <QtMath>
 #include <QMatrix>
 #include <QThread>
+#include <annotoolbar.h>
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +25,7 @@ public:
     MainScene *mainscene;
     SideScene *leftscene, *rightscene;
     QThread *scenethread;
+    AnnoToolbar *toolbar;
 
 private:
     Ui::MainWindow *ui;

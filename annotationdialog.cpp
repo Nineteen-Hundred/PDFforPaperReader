@@ -244,7 +244,7 @@ void AnnotationDialog::ColorBlock::setStyle()
     }
 }
 
-AnnotationDialog::GeomDialog::GeomDialog(const QColor &color)
+AnnotationDialog::GeomDialog::GeomDialog(const QColor &color, int linewidth)
 {
     QHBoxLayout *attrLayout = new QHBoxLayout;
 //    for(int i=0; i<8; i++)
@@ -255,6 +255,19 @@ AnnotationDialog::GeomDialog::GeomDialog(const QColor &color)
 //        connect(colorblocks.at(i), &ColorBlock::clicked, this, &FlatTextDialog::changeColors);
 //    }
 //    colorblocks.at(0)->setIsSelected(true);
+
+    QLabel *widthLabel = new QLabel(tr("Width:"));
+    box = new QComboBox();
+    QStringList str;
+    for(int i=0; i<8; i++)
+    {
+        str << QString::number(i+1);
+    }
+    box->addItems(str);
+    box->setCurrentText(QString::number(linewidth>7?7:linewidth));
+    QHBoxLayout *widthLayout = new QHBoxLayout;
+    widthLayout->addWidget(widthLabel);
+    widthLayout->addWidget(box);
 
     QLabel *colorlabel = new QLabel(tr("Color:"));
     colorlabel->setFixedWidth(40);
@@ -279,6 +292,8 @@ AnnotationDialog::GeomDialog::GeomDialog(const QColor &color)
     connect(deleteBtn, &QPushButton::clicked, this, &GeomDialog::emitDelete);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addLayout(widthLayout);
+    mainLayout->addSpacing(10);
     mainLayout->addLayout(attrLayout);
     mainLayout->addSpacing(10);
     mainLayout->addLayout(buttonLayout);
@@ -287,7 +302,7 @@ AnnotationDialog::GeomDialog::GeomDialog(const QColor &color)
 
 void AnnotationDialog::GeomDialog::emitConfig()
 {
-    emit configUpdated(blocks->getColor());
+    emit configUpdated(blocks->getColor(), box->currentText().toInt());
     close();
 }
 
@@ -348,4 +363,9 @@ AnnotationDialog::ColorBlocks::ColorBlocks(QColor color)
             colorblocks.at(0)->setIsSelected(true);
         }
     }
+}
+
+void AnnotationDialog::LineDialog::emitConfig()
+{
+    emit configUpdated(blocks->getColor(), box->currentText().toInt());
 }

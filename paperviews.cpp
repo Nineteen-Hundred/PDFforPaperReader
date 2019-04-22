@@ -1,4 +1,4 @@
-#include <paperviews.h>
+﻿#include <paperviews.h>
 
 MainScene::MainScene()
 {
@@ -99,8 +99,93 @@ void MainScene::updateSize()
     setSceneRect(0, 0, width, height);
 
     update();
+}
 
-    qDebug() << "success";
+void MainScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if(isPressing)
+    {
+        event->accept();
+        switch(shape)
+        {
+        case 0:
+            endPoint = event->scenePos();
+            tmplineitem->setLine(QLineF(startPoint-startPoint, endPoint-startPoint));
+            tmplineitem->update();
+            tmplineitem->show();
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        QGraphicsScene::mouseMoveEvent(event);
+    }
+}
+
+void MainScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if(isDrawing)
+    {
+        event->accept();
+        QPen pen;
+        pen.setColor(QColor(0, 160, 230));
+        pen.setWidth(2);
+        startPoint = event->scenePos();
+        switch(shape)
+        {
+        case 0: // Line
+            tmplineitem = new QGraphicsLineItem;
+            startPoint = event->scenePos();
+            endPoint = event->scenePos();
+            tmplineitem->setPen(pen);
+            tmplineitem->setLine(QLineF(startPoint, endPoint));
+            tmplineitem->setPos(event->scenePos());
+            addItem(tmplineitem);
+            break;
+        case 1:
+            break;
+        default:
+            tmplineitem = new QGraphicsLineItem;
+            startPoint = QPointF(event->scenePos().x()/scale/width, event->scenePos().y()/scale/height);
+            endPoint = QPointF(event->scenePos().x()/scale/width, event->scenePos().y()/scale/height);
+            tmplineitem->setPen(pen);
+            tmplineitem->setLine(QLineF(startPoint, endPoint));
+            break;
+        }
+        isPressing = true;
+    }
+    else
+    {
+        QGraphicsScene::mousePressEvent(event);
+    }
+}
+
+void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    isPressing = false;
+    endPoint = event->scenePos();
+    switch(shape)
+    {
+
+    }
+    QGraphicsScene::mouseReleaseEvent(event);
+}
+
+void MainScene::changeIsDrawing()
+{
+    QAction *action = (QAction *)sender();
+    if(action->text()==tr("Line"))
+    {
+        shape = 0;
+    }
+    isDrawing = !isDrawing;
+}
+
+void MainScene::setCurrentShape(int i)
+{
+    shape = i;
 }
 
 MainFrame::MainFrame()
@@ -176,6 +261,18 @@ void GraphicsView::updateSize()
     matrix.scale(1, 1);
     matrix.rotate(0);
     setMatrix(matrix);
+}
+
+void GraphicsView::changeCursor(bool isDrawing)
+{
+    if(isDrawing)
+    {
+        setCursor(Qt::CrossCursor);
+    }
+    else
+    {
+        setCursor(Qt::ArrowCursor);
+    }
 }
 
 PaperItem::~PaperItem()
