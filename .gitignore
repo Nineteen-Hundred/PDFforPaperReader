@@ -1,7 +1,6 @@
 *.o
 moc_*
 Makefile
-mainwindow.ui
 CMakeLists.txt
 PDFforPaperReader
 .qmake.stash
