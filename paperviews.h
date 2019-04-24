@@ -20,6 +20,7 @@
 #include <QStackedWidget>
 #include <paperannotation.h>
 #include <QAction>
+#include <QCursor>
 
 class MainFrame;
 
@@ -36,6 +37,7 @@ public:
 
 class MainScene : public QGraphicsScene
 {
+    Q_OBJECT
     friend class MainFrame;
     friend class GraphicsView;
 public:
@@ -58,19 +60,23 @@ public:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
-    void changeIsDrawing();
+    void changeIsDrawing(const QString &text, bool isDrawing);
     void setCurrentShape(int i);
     QGraphicsLineItem *tmplineitem;
     QGraphicsEllipseItem *tmpellipseitem;
     QGraphicsRectItem *tmprectitem;
     QGraphicsTextItem *tmptextitem;
     QPointF startPoint, endPoint;
+    void newFlatText(const QString &text, QFont font, QColor color);
 
 private:
     Poppler::Document *document;
     //PaperWidgets *paperwidgets;
     QList<PaperItem *> pages;
     QGraphicsProxyWidget *paperproxywidget;
+
+signals:
+    void is_drawing(bool flag);
 };
 
 class SideScene : public QGraphicsScene
@@ -88,7 +94,6 @@ public:
     QTimer *refreshtimer;
     void updateSize();
     MainScene *mainscene;
-    void changeCursor(bool isDrawing);
 
 protected:
     virtual void wheelEvent(QWheelEvent *ev) override; 

@@ -2,25 +2,48 @@
 
 AnnoToolbar::AnnoToolbar()
 {
-    actions[0] = new QAction(QIcon(":/image/text"), tr("Open"), this);
-    actions[1] = new QAction(QIcon(":/image/text"), tr("Save"), this);
-    actions[2] = new QAction(QIcon(":/image/text"), tr("Save As"), this);
-    actions[3] = new QAction(QIcon(":/image/text"), tr("Line"), this);
-    actions[4] = new QAction(QIcon(":/image/text"), tr("Flat Text"), this);
-    actions[5] = new QAction(QIcon(":/image/text"), tr("Popup Text"), this);
-    actions[6] = new QAction(QIcon(":/image/text"), tr("Geom"), this);
-    actions[7] = new QAction(QIcon(":/image/text"), tr("Preview"), this);
+    open_action = new QAction(QIcon(":/image/text"), tr("Open"), this);
+    addAction(open_action);
+    saving_action = new QAction(QIcon(":/image/text"), tr("Save"), this);
+    addAction(saving_action);
+    saving_as_action = new QAction(QIcon(":/image/text"), tr("Save As"), this);
+    addAction(saving_as_action);
 
-    for(int i=0; i<8; i++)
+    group.append(new QAction(QIcon(":/image/text"), tr("Line"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("Flat Text"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("Popup Text"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("Geom"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("Preview"), this));
+
+    for(int i=0; i<group.count(); i++)
     {
-        addAction(actions[i]);
-        if(i>=3)
-        {
-            actions[i]->setCheckable(true);
-        }
+        addAction(group.at(i));
+        group.at(i)->setCheckable(true);
+        connect(group.at(i), &QAction::triggered, this, &AnnoToolbar::sendDrawing);
     }
 
     setIconSize(QSize(10,10));
-   setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-   setMovable(false);
+    setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    setMovable(false);
+}
+
+void AnnoToolbar::sendDrawing()
+{
+    QAction *action = (QAction *)sender();
+    if(action->isChecked())
+    {
+        for(int i=0; i<group.count(); i++)
+        {
+            if(group.at(i)!=sender() && group.at(i)->isChecked())
+            {
+                group.at(i)->setChecked(false);
+            }
+        }
+        action->setChecked(true);
+        emit isDrawing(action->text(), true);
+    }
+    else
+    {
+        emit isDrawing(action->text(), false);
+    }
 }

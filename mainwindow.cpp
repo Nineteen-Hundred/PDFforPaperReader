@@ -33,11 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //QString filename = "/home/pysong/下载/finalpaperfile.pdf";
     mainscene->loadFile(filename);
 
-    for(int i=3;i<8;i++)
-    {
-        connect(toolbar->actions[i], &QAction::toggled, mainscene, &MainScene::changeIsDrawing);
-        connect(toolbar->actions[i], &QAction::toggled, mainframe->view(), &GraphicsView::changeCursor);
-    }
+
+    connect(toolbar, &AnnoToolbar::isDrawing, mainscene, &MainScene::changeIsDrawing);
+
 
     connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view(), &GraphicsView::updateSize);
     connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view()->mainscene, &MainScene::updateSize);

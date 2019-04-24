@@ -1,5 +1,12 @@
 ﻿#include <paperviews.h>
 
+#define LINE 0
+#define ARROW 1
+#define CIRCLE 2
+#define RECTANGLE 3
+#define FLATTEXT 4
+#define POPUPTEXT 5
+
 MainScene::MainScene()
 {
     QDesktopWidget *mydesk = QApplication::desktop();
@@ -29,7 +36,7 @@ void MainScene::loadFile(const QString &addr)
             height = image->height()*document->numPages();
         }
         pages.append(new PaperItem(i, image));
-        pages.at(i)->setPos(QPoint(0, image->height()*i));
+        pages.at(i)->setPos(0, image->height()*i);
         addItem(pages.at(i));
     }
 
@@ -108,12 +115,14 @@ void MainScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
         switch(shape)
         {
-        case 0:
+        case LINE:
+        {
             endPoint = event->scenePos();
             tmplineitem->setLine(QLineF(startPoint-startPoint, endPoint-startPoint));
             tmplineitem->update();
             tmplineitem->show();
             break;
+        }
         default:
             break;
         }
@@ -128,14 +137,37 @@ void MainScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if(isDrawing)
     {
+        isPressing = true;
         event->accept();
         QPen pen;
         pen.setColor(QColor(0, 160, 230));
         pen.setWidth(2);
         startPoint = event->scenePos();
+        startPoint = event->scenePos();
+        endPoint = event->scenePos();
         switch(shape)
         {
-        case 0: // Line
+        case LINE:
+        {
+            tmplineitem = new QGraphicsLineItem;
+            tmplineitem->setPen(pen);
+            tmplineitem->setLine(QLineF(startPoint, endPoint));
+            tmplineitem->setPos(event->scenePos());
+            addItem(tmplineitem);
+            break;
+        }
+        case FLATTEXT:
+        {
+            QFont font;
+            font.setPointSize(10);
+            AnnotationDialog::FlatTextDialog *dialog = new AnnotationDialog::FlatTextDialog("", font, Qt::red);
+            connect(dialog, &AnnotationDialog::FlatTextDialog::configUpdated, this, &MainScene::newFlatText);
+            dialog->exec();
+            isPressing = false;
+            break;
+        }
+        default:
+        {
             tmplineitem = new QGraphicsLineItem;
             startPoint = event->scenePos();
             endPoint = event->scenePos();
@@ -144,17 +176,8 @@ void MainScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             tmplineitem->setPos(event->scenePos());
             addItem(tmplineitem);
             break;
-        case 1:
-            break;
-        default:
-            tmplineitem = new QGraphicsLineItem;
-            startPoint = QPointF(event->scenePos().x()/scale/width, event->scenePos().y()/scale/height);
-            endPoint = QPointF(event->scenePos().x()/scale/width, event->scenePos().y()/scale/height);
-            tmplineitem->setPen(pen);
-            tmplineitem->setLine(QLineF(startPoint, endPoint));
-            break;
         }
-        isPressing = true;
+        }
     }
     else
     {
@@ -164,28 +187,118 @@ void MainScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    isPressing = false;
-    endPoint = event->scenePos();
-    switch(shape)
+    if(isPressing)
     {
+        event->accept();
+        isPressing = false;
+        endPoint = event->scenePos();
+        int imageheight = height/document->numPages();
+        int index = (int)(tmplineitem->pos().y()/scale/imageheight);
+        switch(shape)
+        {
+        case LINE:
+        {
+            Poppler::LineAnnotation *lineannotation = new Poppler::LineAnnotation(Poppler::LineAnnotation::StraightLine);
+            QRectF boundary = QRectF(tmplineitem->pos().x()/scale/width, (((int)(tmplineitem->pos().y()))%(int)imageheight)/scale/imageheight,
+                                     tmplineitem->boundingRect().width()/scale/width, tmplineitem->boundingRect().height()/scale/imageheight);
+            lineannotation->setBoundary(boundary);
+            QLinkedList<QPointF> points;
+            points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
+            points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
+            lineannotation->setLinePoints(points);
+            lineannotation->style().setWidth(4);
+            document->page(index)->addAnnotation(lineannotation);
+            qDebug() << startPoint.x()/scale/width << ((int)startPoint.y())%(int)imageheight/scale/imageheight;
+            annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight));
+            qDebug() << annotations.last()->pos().x() << annotations.last()->pos().y() << annotations.last()->boundingRect().width() << annotations.last()->boundingRect().height();
+            this->addItem(annotations.at(annotations.length()-1));
+            break;
+        }
+        default:
+        {
 
+        }
+        }
     }
-    QGraphicsScene::mouseReleaseEvent(event);
+    else
+    {
+        QGraphicsScene::mouseReleaseEvent(event);
+    }
 }
 
-void MainScene::changeIsDrawing()
+void MainScene::changeIsDrawing(const QString &text, bool isDrawing)
 {
-    QAction *action = (QAction *)sender();
-    if(action->text()==tr("Line"))
+    qDebug() << "changejici";
+    if(text==tr("Line"))
     {
-        shape = 0;
+        shape = LINE;
     }
-    isDrawing = !isDrawing;
+    else if(text==tr("Arrow"))
+    {
+        shape = ARROW;
+    }
+    else if(text==tr("Circle"))
+    {
+        shape = CIRCLE;
+    }
+    else if(text==tr("Rectangle"))
+    {
+        shape = RECTANGLE;
+    }
+    else if(text==tr("Flat Text"))
+    {
+        shape = FLATTEXT;
+    }
+    else if(text==tr("Popup Text"))
+    {
+        shape = POPUPTEXT;
+    }
+    else
+    {
+        shape = LINE;
+    }
+    this->isDrawing = isDrawing;
+    if(isDrawing)
+    {
+        for(int i=0; i<pages.count();i++)
+        {
+            pages.at(i)->setCursor(Qt::CrossCursor);
+        }
+    }
+    else
+    {
+        for(int i=0; i<pages.count();i++)
+        {
+            pages.at(i)->setCursor(Qt::ArrowCursor);
+        }
+    }
 }
 
 void MainScene::setCurrentShape(int i)
 {
     shape = i;
+}
+
+void MainScene::newFlatText(const QString &text, QFont font, QColor color)
+{
+    int imageheight = height/document->numPages();
+    int index = (int)(startPoint.y()/scale/imageheight);
+    Poppler::TextAnnotation *annotation = new Poppler::TextAnnotation(Poppler::TextAnnotation::InPlace);
+    annotation->setTextColor(color);
+    annotation->setContents(text);
+    annotation->setTextFont(font);
+    int totallength = annotation->textFont().pointSize()*annotation->contents().length();
+    int hdistance = scale*width-startPoint.x();
+    int vdistance = (index+1)*scale*imageheight-startPoint.y();
+    qDebug() << hdistance << vdistance;
+    annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
+                                   (totallength/hdistance>1?hdistance:totallength)/scale/width,
+                                   ((totallength/hdistance+1)*annotation->textFont().pointSize()+20>vdistance?vdistance:(totallength/hdistance+1)*scale*annotation->textFont().pointSize()+20)/scale/imageheight));
+    qDebug() << annotation->boundary().width()*scale*width << annotation->boundary().height()*scale*height;
+    document->page(index)->addAnnotation(annotation);
+    annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width, imageheight));
+    this->addItem(annotations.at(annotations.length()-1));
+
 }
 
 MainFrame::MainFrame()
@@ -261,18 +374,6 @@ void GraphicsView::updateSize()
     matrix.scale(1, 1);
     matrix.rotate(0);
     setMatrix(matrix);
-}
-
-void GraphicsView::changeCursor(bool isDrawing)
-{
-    if(isDrawing)
-    {
-        setCursor(Qt::CrossCursor);
-    }
-    else
-    {
-        setCursor(Qt::ArrowCursor);
-    }
 }
 
 PaperItem::~PaperItem()

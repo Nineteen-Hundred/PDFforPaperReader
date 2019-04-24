@@ -103,7 +103,6 @@ void PaperAnnotation::FlatTextAnnotation::setNewStyle(const QString &text, const
     annotation->setContents(text);
     annotation->setTextFont(font);
     annotation->setTextColor(color);
-
 }
 
 PaperAnnotation::Annotation::Annotation() {
