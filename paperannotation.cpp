@@ -559,3 +559,64 @@ void PaperAnnotation::PopupTextAnnotation::setNewStyle(const QString &text, cons
     annotation->setContents(text);
     annotation->setTextColor(color);
 }
+
+//QPainterPath PaperAnnotation::InkAnnotation::shape() const
+//{
+//    QPainterPath painter;
+//    for(int i=0; i<annotation->inkPaths().count(); i++)
+//    {
+//        QLinkedListIterator<QPointF> rwIterator(annotation->inkPaths().at(i));
+//        while(rwIterator.hasNext())
+//        {
+//            QPointF point = rwIterator.next();
+//            painter.lineTo(QPointF(point.x()/scale/width, point.y()/scale/height));
+//        }
+//    }
+//    return painter;
+//}
+
+void PaperAnnotation::InkAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->setPen(annotation->style().color());
+    for(int i=0; i<annotation->inkPaths().count(); i++)
+    {
+        QLinkedListIterator<QPointF> rwIterator(annotation->inkPaths().at(i));
+        while(rwIterator.hasNext())
+        {
+            QPointF point = rwIterator.next();
+            painter->drawPoint(QPointF((point.x()-annotation->boundary().left())*scale*width, (point.y()-annotation->boundary().top())*scale*height));
+        }
+    }
+    setZValue(10);
+
+    if(option->state & QStyle::State_Selected)
+    {
+        const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
+        if (qFuzzyIsNull(qMax(murect.width(), murect.height())))
+            return;
+
+        const QRectF mbrect = painter->transform().mapRect(boundingRect());
+        if (qMin(mbrect.width(), mbrect.height()) < qreal(1.0))
+            return;
+
+        qreal itemPenWidth;
+        itemPenWidth = 1;
+        const qreal pad = itemPenWidth / 2;
+
+        const qreal penWidth = 0;
+
+        const QColor fgcolor = option->palette.windowText().color();
+        const QColor bgcolor(
+                              fgcolor.red()   > 127 ? 0 : 255,
+                              fgcolor.green() > 127 ? 0 : 255,
+                              fgcolor.blue()  > 127 ? 0 : 255);
+
+        painter->setPen(QPen(bgcolor, penWidth, Qt::SolidLine));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRect(boundingRect().adjusted(pad, pad, -pad, -pad));
+
+        painter->setPen(QPen(option->palette.windowText(), 0, Qt::DashLine));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRect(boundingRect().adjusted(pad, pad, -pad, -pad));
+    }
+}

@@ -153,13 +153,32 @@ private:
 class InkAnnotation : public Annotation
 {
 public:
-    InkAnnotation(Poppler::InkAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
+    InkAnnotation(int index, Poppler::InkAnnotation *annotation, int width, int height) {
+        this->index = index;
+        this->annotation = annotation; this->width = width; this->height = height;
+        setPos(annotation->boundary().x()*width*scale,
+               annotation->boundary().y()*height*scale +index*scale*height);
+    }
+//    QPainterPath shape() const override;
+    QRectF boundingRect() const override
+    {return QRectF(0, 0, annotation->boundary().width()*width*scale,
+                   annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-private:
+//    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+//    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+//    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+//    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+//    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+//    bool isInResizeArea(const QPointF& pos);
+
     Poppler::InkAnnotation *annotation;
     int height, width = 0;
+    void setNewStyle(const QColor &color, int width);
+
+private:
+    QPointF startPoint;
+    QPointF endPoint;
 };
 
 class LineAnnotation : public Annotation

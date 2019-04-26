@@ -76,6 +76,14 @@ void MainScene::loadFile(const QString &addr)
                 this->addItem(annotations.at(annotations.length()-1));
                 break;
             }
+            case 6:  // Ink Annotation
+            {
+                Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(document->page(pageidx)->annotations().at(i));
+
+                annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, width, height/document->numPages()));
+                this->addItem(annotations.at(annotations.length()-1));
+                break;
+            }
             }
         }
     }
