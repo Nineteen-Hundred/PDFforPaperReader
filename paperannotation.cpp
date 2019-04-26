@@ -64,7 +64,6 @@ void PaperAnnotation::FlatTextAnnotation::mouseMoveEvent(QGraphicsSceneMouseEven
     {
         qreal w = event->pos().x();
         qreal h = event->pos().y();
-        qDebug() << w;
         QRectF boundary = QRectF(annotation->boundary());
         boundary.setWidth(w/scale/width);
         boundary.setHeight(h/scale/height);
@@ -435,7 +434,6 @@ void PaperAnnotation::LineAnnotation::mouseReleaseEvent(QGraphicsSceneMouseEvent
     }
     else
     {
-        qDebug() << "lineannotation";
         startPoint = startPoint + QPointF(pos().x()/scale/width-annotation->boundary().x(), (pos().y()-index*scale*height)/scale/height-annotation->boundary().y());
         endPoint = endPoint + QPointF(pos().x()/scale/width-annotation->boundary().x(), (pos().y()-index*scale*height)/scale/height-annotation->boundary().y());
         annotation->linePoints().clear();
@@ -458,4 +456,106 @@ void PaperAnnotation::LineAnnotation::setNewStyle(const QColor &color, int width
     style.setColor(color);
     style.setWidth(width);
     annotation->setStyle(style);
+}
+
+void PaperAnnotation::PopupTextAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->setPen(annotation->textColor());
+    painter->setFont(annotation->textFont());
+    painter->drawImage(QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale),
+                      QImage(":/image/popup"));
+    setZValue(10);
+
+    if(option->state & QStyle::State_Selected)
+    {
+        const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
+        if (qFuzzyIsNull(qMax(murect.width(), murect.height())))
+            return;
+
+        const QRectF mbrect = painter->transform().mapRect(boundingRect());
+        if (qMin(mbrect.width(), mbrect.height()) < qreal(1.0))
+            return;
+
+        qreal itemPenWidth;
+        itemPenWidth = 1;
+        const qreal pad = itemPenWidth / 2;
+
+        const qreal penWidth = 0;
+
+        const QColor fgcolor = option->palette.windowText().color();
+        const QColor bgcolor(
+                              fgcolor.red()   > 127 ? 0 : 255,
+                              fgcolor.green() > 127 ? 0 : 255,
+                              fgcolor.blue()  > 127 ? 0 : 255);
+
+        painter->setPen(QPen(bgcolor, penWidth, Qt::SolidLine));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRect(boundingRect().adjusted(pad, pad, -pad, -pad));
+
+        painter->setPen(QPen(option->palette.windowText(), 0, Qt::DashLine));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRect(boundingRect().adjusted(pad, pad, -pad, -pad));
+    }
+}
+
+void PaperAnnotation::PopupTextAnnotation::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+    AnnotationDialog::FlatTextDialog *dialog = new AnnotationDialog::FlatTextDialog(annotation->contents(), annotation->textFont(), annotation->textColor());
+    connect(dialog, &AnnotationDialog::FlatTextDialog::configUpdated, this, &PaperAnnotation::PopupTextAnnotation::setNewStyle);
+    dialog->exec();
+}
+
+void PaperAnnotation::PopupTextAnnotation::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+    if (m_bIsResizing || (isInResizeArea(event->pos()) && isSelected()))
+        setCursor(Qt::SizeFDiagCursor);
+    else
+        setCursor(Qt::ArrowCursor);
+
+    QGraphicsItem::hoverMoveEvent(event);
+}
+
+void PaperAnnotation::PopupTextAnnotation::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (m_bIsResizing)
+    {
+        qreal w = event->pos().x();
+        qreal h = event->pos().y();
+        QRectF boundary = QRectF(annotation->boundary());
+        boundary.setWidth(w/scale/width);
+        boundary.setHeight(h/scale/height);
+        annotation->setBoundary(boundary);
+        prepareGeometryChange();
+    }
+    else
+    {
+        QGraphicsItem::mouseMoveEvent(event);
+    }
+}
+
+void PaperAnnotation::PopupTextAnnotation::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && isInResizeArea(event->pos()))
+        m_bIsResizing = true;
+    else
+        QGraphicsItem::mousePressEvent(event);
+}
+
+void PaperAnnotation::PopupTextAnnotation::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && m_bIsResizing)
+        m_bIsResizing = false;
+    else
+    {
+        QRectF boundary = QRectF(pos().x()/scale/width, (pos().y()-index*scale*height)/scale/height, annotation->boundary().width(), annotation->boundary().height());
+        annotation->setBoundary(boundary);
+        QGraphicsItem::mouseReleaseEvent(event);
+        QGraphicsItem::mouseReleaseEvent(event);
+    }
+}
+
+void PaperAnnotation::PopupTextAnnotation::setNewStyle(const QString &text, const QFont &font, const QColor &color)
+{
+    annotation->setContents(text);
+    annotation->setTextColor(color);
 }

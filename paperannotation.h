@@ -44,13 +44,29 @@ private:
 class PopupTextAnnotation : public Annotation
 {
 public:
-    PopupTextAnnotation(Poppler::TextAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
-    QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
+    PopupTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height) {
+        this->index = index;
+        this->annotation = annotation; this->width = width; this->height = height;
+        setPos(annotation->boundary().x()*width*scale,
+               annotation->boundary().y()*height*scale +index*scale*height);
+    }
+    QRectF boundingRect()const override
+    {return QRectF(0, 0, annotation->boundary().width()*width*scale,
+                   annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-private:
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+
     Poppler::TextAnnotation *annotation;
     int height, width = 0;
+
+private:
+    bool isMoving = false;
+    void setNewStyle(const QString &text, const QFont &font, const QColor &color);
 };
 
 class FlatTextAnnotation : public Annotation

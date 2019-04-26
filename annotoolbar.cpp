@@ -8,12 +8,15 @@ AnnoToolbar::AnnoToolbar()
     addAction(saving_action);
     saving_as_action = new QAction(QIcon(":/image/text"), tr("Save As"), this);
     addAction(saving_as_action);
+    preview_action = new QAction(QIcon(":/image/text"), tr("Preview"), this);
+    addAction(preview_action);
+
 
     group.append(new QAction(QIcon(":/image/text"), tr("Line"), this));
     group.append(new QAction(QIcon(":/image/text"), tr("Flat Text"), this));
     group.append(new QAction(QIcon(":/image/text"), tr("Popup Text"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Geom"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Preview"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("Circle"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("Rectangle"), this));
 
     for(int i=0; i<group.count(); i++)
     {

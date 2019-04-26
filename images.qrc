@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/image">
         <file alias="text">5816106ddb63f_610.jpg</file>
+        <file alias="popup">popup.png</file>
     </qresource>
 </RCC>

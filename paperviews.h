@@ -68,6 +68,7 @@ public:
     QGraphicsTextItem *tmptextitem;
     QPointF startPoint, endPoint;
     void newFlatText(const QString &text, QFont font, QColor color);
+    void newPopupText(const QString &text, QFont font, QColor color);
 
 private:
     Poppler::Document *document;
