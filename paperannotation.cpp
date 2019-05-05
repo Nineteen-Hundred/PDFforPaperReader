@@ -93,7 +93,6 @@ void PaperAnnotation::FlatTextAnnotation::mouseReleaseEvent(QGraphicsSceneMouseE
         QRectF boundary = QRectF(pos().x()/scale/width, (pos().y()-index*scale*height)/scale/height, annotation->boundary().width(), annotation->boundary().height());
         annotation->setBoundary(boundary);
         QGraphicsItem::mouseReleaseEvent(event);
-        QGraphicsItem::mouseReleaseEvent(event);
     }
 }
 
@@ -194,7 +193,6 @@ QPainterPath PaperAnnotation::GeomAnnotation::shape() const
         }
         return stroker.createStroke(painter);
     }
-
 }
 
 void PaperAnnotation::GeomAnnotation::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
@@ -577,15 +575,23 @@ void PaperAnnotation::PopupTextAnnotation::setNewStyle(const QString &text, cons
 
 void PaperAnnotation::InkAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    painter->setPen(annotation->style().color());
+    QPen pen;
+    pen.setColor(annotation->style().color());
+    pen.setWidth(annotation->style().width());
+    painter->setPen(pen);
     for(int i=0; i<annotation->inkPaths().count(); i++)
     {
+        QPainterPath path;
+        QPainterPathStroker stroker;
+        stroker.setWidth(4);
         QLinkedListIterator<QPointF> rwIterator(annotation->inkPaths().at(i));
+        path.moveTo(rwIterator.next());
         while(rwIterator.hasNext())
         {
             QPointF point = rwIterator.next();
-            painter->drawPoint(QPointF((point.x()-annotation->boundary().left())*scale*width, (point.y()-annotation->boundary().top())*scale*height));
+            path.lineTo(QPointF((point.x()-annotation->boundary().left())*scale*width, (point.y()-annotation->boundary().top())*scale*height));
         }
+        painter->drawPath(path);
     }
     setZValue(10);
 
@@ -619,4 +625,42 @@ void PaperAnnotation::InkAnnotation::paint(QPainter *painter, const QStyleOption
         painter->setBrush(Qt::NoBrush);
         painter->drawRect(boundingRect().adjusted(pad, pad, -pad, -pad));
     }
+}
+
+void PaperAnnotation::InkAnnotation::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+    AnnotationDialog::GeomDialog *dialog = new AnnotationDialog::GeomDialog(annotation->style().color(), (int)(annotation->style().width()));
+    connect(dialog, &AnnotationDialog::GeomDialog::configUpdated, this, &PaperAnnotation::InkAnnotation::setNewStyle);
+    dialog->exec();
+}
+
+void PaperAnnotation::InkAnnotation::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mouseReleaseEvent(event);
+    QList<QLinkedList<QPointF>> listpoints;
+    for(int i=0; i<annotation->inkPaths().count(); i++)
+    {
+        QPainterPath path;
+        QPainterPathStroker stroker;
+        stroker.setWidth(4);
+        QLinkedList<QPointF> points;
+        QLinkedListIterator<QPointF> rwIterator(annotation->inkPaths().at(i));
+        while(rwIterator.hasNext())
+        {
+            points.append(rwIterator.next() + QPointF(pos().x()/scale/width-annotation->boundary().x(), (pos().y()-index*scale*height)/scale/height-annotation->boundary().y()));
+        }
+        listpoints.append(points);
+    }
+    annotation->setInkPaths(listpoints);
+
+    QRectF boundary = QRectF(pos().x()/scale/width, (pos().y()-index*scale*height)/scale/height, annotation->boundary().width(), annotation->boundary().height());
+    annotation->setBoundary(boundary);
+}
+
+void PaperAnnotation::InkAnnotation::setNewStyle(const QColor &color, int width)
+{
+    Poppler::Annotation::Style style = Poppler::Annotation::Style(annotation->style());
+    style.setColor(color);
+    style.setWidth(width);
+    annotation->setStyle(style);
 }

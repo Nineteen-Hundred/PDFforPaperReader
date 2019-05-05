@@ -165,12 +165,8 @@ public:
                    annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-//    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
-//    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
-//    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
-//    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
-//    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
-//    bool isInResizeArea(const QPointF& pos);
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
     Poppler::InkAnnotation *annotation;
     int height, width = 0;

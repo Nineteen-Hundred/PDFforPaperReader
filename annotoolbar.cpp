@@ -17,7 +17,7 @@ AnnoToolbar::AnnoToolbar()
     group.append(new QAction(QIcon(":/image/text"), tr("Popup Text"), this));
     group.append(new QAction(QIcon(":/image/text"), tr("Circle"), this));
     group.append(new QAction(QIcon(":/image/text"), tr("Rectangle"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Ink"), this));
+    //group.append(new QAction(QIcon(":/image/text"), tr("Ink"), this));
 
     for(int i=0; i<group.count(); i++)
     {
