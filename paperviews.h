@@ -46,7 +46,6 @@ public:
     void refreshView(qreal scale);
     void drawAnnotations();
     QList<PaperAnnotation::Annotation *> annotations;
-    QTimer *refreshtimer;
     void updateSize();
     int xres;
     int yres;
@@ -56,6 +55,7 @@ public:
     bool isDrawing = false;
     bool isPressing = false;
     int shape = 0;
+    int currentpage = 0;
 
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
@@ -78,6 +78,7 @@ private:
 
 signals:
     void is_drawing(bool flag);
+    void resizeCompleted();
 };
 
 class SideScene : public QGraphicsScene
@@ -95,13 +96,15 @@ public:
     QTimer *refreshtimer;
     void updateSize();
     MainScene *mainscene;
+    QPointF currentPoint, currentScenePoint, centerPoint, oldCenterPoint, lengthPoint;
+    void timeStopped();
 
 protected:
     virtual void wheelEvent(QWheelEvent *ev) override; 
 
 private:
     MainFrame *frame;
-    qreal scalefactor = 1; 
+    qreal scalefactor = 1, oldscalefactor = 1;
     QPointF point;
 
 

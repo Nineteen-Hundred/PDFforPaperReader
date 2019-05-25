@@ -29,16 +29,14 @@ MainWindow::MainWindow(QWidget *parent) :
     totalSpliter->addWidget(rightSpliter);
     this->setCentralWidget(totalSpliter);
 
-    QString filename = "/home/pysong/下载/A Very Brief Introduction to Machine Learning With Applications to Communication Systems.pdf";
+    QString filename = "/home/pysong/下载/新形势下党校教科研与党建工作协调机制研究_钱昕黎.pdf";
     //QString filename = "/home/pysong/下载/finalpaperfile.pdf";
     mainscene->loadFile(filename);
 
 
     connect(toolbar, &AnnoToolbar::isDrawing, mainscene, &MainScene::changeIsDrawing);
 
-
     connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view(), &GraphicsView::updateSize);
-    connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view()->mainscene, &MainScene::updateSize);
 }
 
 MainWindow::~MainWindow()

@@ -12,8 +12,6 @@ MainScene::MainScene()
     QDesktopWidget *mydesk = QApplication::desktop();
     xres = mydesk->physicalDpiX();
     yres = mydesk->physicalDpiY();
-
-    refreshtimer = new QTimer();
 }
 
 void MainScene::loadFile(const QString &addr)
@@ -93,31 +91,7 @@ void MainScene::loadFile(const QString &addr)
 
 void MainScene::updateSize()
 {
-    qDebug() << "success";
-    clear();
-    pages.clear();
 
-    for(int i=0; i<annotations.length(); i++)
-    {
-        annotations.at(i)->scale = scale;
-    }
-
-    for(int i=0; i<document->numPages(); i++)
-    {
-        QImage *image = new QImage(document->page(i)->renderToImage(xres*scale, yres*scale, -1, -1, -1, -1));
-        if(i==0)
-        {
-            width = image->width();
-            height = image->height()*document->numPages();
-        }
-        pages.append(new PaperItem(i, image));
-        pages.at(i)->setPos(QPoint(0, image->height()*i));
-        addItem(pages.at(i));
-    }
-
-    setSceneRect(0, 0, width, height);
-
-    update();
 }
 
 void MainScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -446,6 +420,14 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
 {
     if(ev->modifiers() & Qt::ControlModifier)
     {
+        if(!refreshtimer->isActive())
+        {
+            oldCenterPoint = mapToScene(QPoint(width()/2, height()/2));
+            currentScenePoint = mapToScene(ev->pos());
+            lengthPoint = oldCenterPoint-currentScenePoint;
+            mainscene->currentpage = (int)(currentScenePoint.y()/height()/scalefactor);
+        }
+
         if(ev->delta()>0)
         {
             refreshtimer->stop();
@@ -453,6 +435,8 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
             scale(1.2, 1.2);
             scalefactor*=1.2;
             mainscene->scale = scalefactor;
+            centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
+            centerOn(centerPoint);
             refreshtimer->start(500);
         }
         else
@@ -462,6 +446,9 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
             scale(0.8, 0.8);
             scalefactor*=0.8;
             mainscene->scale = scalefactor;
+            QPointF lengthPoint = oldCenterPoint-currentScenePoint;
+            centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
+            centerOn(centerPoint);
             refreshtimer->start(500);
         }
         ev->accept();
@@ -474,13 +461,59 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
 
 void GraphicsView::updateSize()
 {
-    qDebug() << "updateSize";
     refreshtimer->stop();
+    mainscene->clear();
+    mainscene->pages.clear();
+
+    for(int i=0; i<mainscene->annotations.length(); i++)
+    {
+        mainscene->annotations.at(i)->scale = mainscene->scale;
+    }
+
+    int i = mainscene->currentpage;
+    QImage *image1 = new QImage(mainscene->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
+
+    mainscene->width = image1->width();
+    mainscene->height = image1->height()*mainscene->document->numPages();
+
+    PaperItem * iter1 = new PaperItem(i, image1);
+    iter1->setPos(QPoint(0, image1->height()*i));
+    mainscene->addItem(iter1);
+
+    setSceneRect(0, 0, mainscene->width, mainscene->height);
 
     QMatrix matrix;
     matrix.scale(1, 1);
     matrix.rotate(0);
     setMatrix(matrix);
+    centerPoint = currentScenePoint*scalefactor/oldscalefactor+lengthPoint;
+    centerOn(centerPoint.x(), centerPoint.y());
+
+    oldscalefactor = scalefactor;
+
+    update();
+    mainscene->update();
+
+    for(int i=0; i<mainscene->document->numPages(); i++)
+    {
+        if(i!=mainscene->currentpage)
+        {
+            QImage *image = new QImage(mainscene->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
+
+            mainscene->pages.append(new PaperItem(i, image));
+            mainscene->pages.at(i)->setPos(QPoint(0, image->height()*i));
+            mainscene->addItem(mainscene->pages.at(i));
+        }
+        else
+        {
+            mainscene->pages.append(iter1);
+        }
+    }
+}
+
+void GraphicsView::timeStopped()
+{
+    refreshtimer->stop();
 }
 
 PaperItem::~PaperItem()
