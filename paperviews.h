@@ -21,15 +21,17 @@
 #include <paperannotation.h>
 #include <QAction>
 #include <QCursor>
+#include <autodocument.h>
+#include <QThread>
 
 class MainFrame;
 
 class PaperItem : public QGraphicsItem
 {
 public:
-    PaperItem(int index, QImage *image) {this->index=index; this->image = image; setZValue(-10);}
-    ~PaperItem() override;
+    PaperItem(int index, QVector <QImage *> images) {this->index=index; this->images = images; setZValue(-10);}
     QImage *image;
+    QVector <QImage *> images;
     int index;
     virtual QRectF boundingRect()const override;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -71,7 +73,8 @@ public:
     void newPopupText(const QString &text, QFont font, QColor color);
 
 private:
-    Poppler::Document *document;
+    //Poppler::Document *document;
+    AutoDocument *document;
     //PaperWidgets *paperwidgets;
     QList<PaperItem *> pages;
     QGraphicsProxyWidget *paperproxywidget;

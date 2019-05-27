@@ -26,6 +26,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    autodocument.cpp \
         main.cpp \
         mainwindow.cpp \
     paperviews.cpp \
@@ -34,6 +35,7 @@ SOURCES += \
     annotoolbar.cpp
 
 HEADERS += \
+    autodocument.h \
         mainwindow.h \
     paperviews.h \
     paperannotation.h \

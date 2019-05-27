@@ -19,8 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     rightSpliter = new QSplitter();
     centerSpliter = new QSplitter();
     totalSpliter = new QSplitter(Qt::Horizontal);
-    leftSpliter->setFixedWidth(200);
-    rightSpliter->setFixedWidth(200);
+    leftSpliter->setFixedWidth(20);
+    rightSpliter->setFixedWidth(20);
     MainFrame *mainframe = new MainFrame();
     mainframe->view()->setScene(mainscene);
     centerSpliter->addWidget(mainframe);

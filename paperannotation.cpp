@@ -258,8 +258,9 @@ void PaperAnnotation::GeomAnnotation::setNewStyle(const QColor &color, int width
     annotation->setStyle(style);
 }
 
-PaperAnnotation::LineAnnotation::LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height)
+PaperAnnotation::LineAnnotation::LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height, double scalefactor)
 {
+    this->scale = scalefactor;
     this->index = index;
     this->annotation = annotation; this->width = width; this->height = height;
 

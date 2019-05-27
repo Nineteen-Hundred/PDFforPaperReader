@@ -9,6 +9,10 @@
 
 MainScene::MainScene()
 {
+    document = new AutoDocument;
+    QThread *thread = new QThread(this);
+    document->moveToThread(thread);
+    thread->start();
     QDesktopWidget *mydesk = QApplication::desktop();
     xres = mydesk->physicalDpiX();
     yres = mydesk->physicalDpiY();
@@ -16,69 +20,75 @@ MainScene::MainScene()
 
 void MainScene::loadFile(const QString &addr)
 {
-    document = Poppler::Document::load(addr);
-    if (!document || document->isLocked()) {
+    document->document = Poppler::Document::load(addr);
+    if (!document || document->document->isLocked()) {
         delete document;
         return;
     }
 
-    document->setRenderHint(Poppler::Document::TextAntialiasing, 1);
-    document->setRenderHint(Poppler::Document::Antialiasing, 1);
+    document->document->setRenderHint(Poppler::Document::TextAntialiasing, 1);
+    document->document->setRenderHint(Poppler::Document::Antialiasing, 1);
 
-    for(int i=0; i<document->numPages(); i++)
+    for(int i=0; i<document->document->numPages(); i++)
     {
-        QImage *image = new QImage(document->page(i)->renderToImage(xres, yres, -1, -1, -1, -1));
+        QImage *image = new QImage(document->document->page(i)->renderToImage(xres, yres, -1, -1, -1, -1));
         if(i==0)
         {
             width = image->width();
-            height = image->height()*document->numPages();
+            height = image->height()*document->document->numPages();
         }
-        pages.append(new PaperItem(i, image));
+        document->images.append(image);
+        pages.append(new PaperItem(i, document->images));
         pages.at(i)->setPos(0, image->height()*i);
         addItem(pages.at(i));
     }
 
-    for(int pageidx=0; pageidx<document->numPages(); pageidx++)
+    for(int pageidx=0; pageidx<document->document->numPages(); pageidx++)
     {
-        for(int i=0;i<document->page(pageidx)->annotations().length();i++)
+        for(int i=0;i<document->document->page(pageidx)->annotations().length();i++)
         {
-            switch(document->page(pageidx)->annotations().at(i)->subType())
+            switch(document->document->page(pageidx)->annotations().at(i)->subType())
             {
             case 1:  // Text Annotation
             {
-                Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(document->page(pageidx)->annotations().at(i));
+                Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(document->document->page(pageidx)->annotations().at(i));
                 if(annotation->textType()==1)
                 {
-                    annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, width, height/document->numPages()));
+                    annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, width, height/document->document->numPages()));
                     this->addItem(annotations.at(annotations.length()-1));
                 }
                 else {
-                    annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, width, height/document->numPages()));
+                    annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
                 }
                 break;
             }
             case 3:  // Geom Annotation
             {
-                Poppler::GeomAnnotation *annotation = (Poppler::GeomAnnotation *)(document->page(pageidx)->annotations().at(i));
+                Poppler::GeomAnnotation *annotation = (Poppler::GeomAnnotation *)(document->document->page(pageidx)->annotations().at(i));
 
-                annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, width, height/document->numPages()));
+                annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
                 break;
             }
             case 2:
             {
-                Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(document->page(pageidx)->annotations().at(i));
+                Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(document->document->page(pageidx)->annotations().at(i));
 
-                annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, width, height/document->numPages()));
+                annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
+
+                QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
+                startPoint = rwIterator.next();
+                rwIterator.toBack();
+                endPoint = rwIterator.previous();
                 break;
             }
             case 6:  // Ink Annotation
             {
-                Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(document->page(pageidx)->annotations().at(i));
+                Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(document->document->page(pageidx)->annotations().at(i));
 
-                annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, width, height/document->numPages()));
+                annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, width, height/document->document->numPages()));
                 this->addItem(annotations.at(annotations.length()-1));
                 break;
             }
@@ -220,7 +230,7 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
         isPressing = false;
         endPoint = event->scenePos();
-        int imageheight = height/document->numPages();
+        int imageheight = height/document->document->numPages();
         switch(shape)
         {
         case LINE:
@@ -235,10 +245,12 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             lineannotation->setLinePoints(points);
             lineannotation->style().setWidth(4);
-            document->page(index)->addAnnotation(lineannotation);
+            document->document->page(index)->addAnnotation(lineannotation);
             qDebug() << startPoint.x()/scale/width << ((int)startPoint.y())%(int)imageheight/scale/imageheight;
-            annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight));
+            annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight, scale));
             qDebug() << annotations.last()->pos().x() << annotations.last()->pos().y() << annotations.last()->boundingRect().width() << annotations.last()->boundingRect().height();
+            annotations.at(annotations.length()-1)->scale = scale;
+            qDebug() << scale;
             this->addItem(annotations.at(annotations.length()-1));
             this->removeItem(tmplineitem);
             break;
@@ -255,8 +267,8 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             geomannotation->style().setWidth(4);
-            document->page(index)->addAnnotation(geomannotation);
-            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight));
+            document->document->page(index)->addAnnotation(geomannotation);
+            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
             this->removeItem(tmpellipseitem);
             break;
@@ -273,9 +285,10 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             geomannotation->style().setWidth(4);
-            document->page(index)->addAnnotation(geomannotation);
-            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight));
+            document->document->page(index)->addAnnotation(geomannotation);
+            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
+            annotations.at(annotations.length()-1)->scale = scale;
             this->removeItem(tmprectitem);
             break;
         }
@@ -346,7 +359,7 @@ void MainScene::setCurrentShape(int i)
 
 void MainScene::newFlatText(const QString &text, QFont font, QColor color)
 {
-    int imageheight = height/document->numPages();
+    int imageheight = height/document->document->numPages();
     int index = (int)(startPoint.y()/scale/imageheight);
     Poppler::TextAnnotation *annotation = new Poppler::TextAnnotation(Poppler::TextAnnotation::InPlace);
     annotation->setTextColor(color);
@@ -358,14 +371,14 @@ void MainScene::newFlatText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    (totallength/hdistance>1?hdistance:totallength)/scale/width,
                                    ((totallength/hdistance+1)*annotation->textFont().pointSize()+20>vdistance?vdistance:(totallength/hdistance+1)*scale*annotation->textFont().pointSize()+20)/scale/imageheight));
-    document->page(index)->addAnnotation(annotation);
+    document->document->page(index)->addAnnotation(annotation);
     annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width, imageheight));
     this->addItem(annotations.at(annotations.length()-1));
 }
 
 void MainScene::newPopupText(const QString &text, QFont font, QColor color)
 {
-    int imageheight = height/document->numPages();
+    int imageheight = height/document->document->numPages();
     int index = (int)(startPoint.y()/scale/imageheight);
     Poppler::TextAnnotation *annotation = new Poppler::TextAnnotation(Poppler::TextAnnotation::Linked);
     annotation->setTextColor(color);
@@ -377,8 +390,8 @@ void MainScene::newPopupText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    30/scale/width,
                                    30/scale/imageheight));
-    document->page(index)->addAnnotation(annotation);
-    annotations.append(new PaperAnnotation::PopupTextAnnotation(index, annotation, width, imageheight));
+    document->document->page(index)->addAnnotation(annotation);
+    annotations.append(new PaperAnnotation::PopupTextAnnotation(index, annotation, width, imageheight, scale));
     this->addItem(annotations.at(annotations.length()-1));
 }
 
@@ -420,6 +433,7 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
 {
     if(ev->modifiers() & Qt::ControlModifier)
     {
+        mainscene->document->indexes.clear();
         if(!refreshtimer->isActive())
         {
             oldCenterPoint = mapToScene(QPoint(width()/2, height()/2));
@@ -471,44 +485,44 @@ void GraphicsView::updateSize()
     }
 
     int i = mainscene->currentpage;
-    QImage *image1 = new QImage(mainscene->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
+    QImage *image1 = new QImage(mainscene->document->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
 
     mainscene->width = image1->width();
-    mainscene->height = image1->height()*mainscene->document->numPages();
+    mainscene->height = image1->height()*mainscene->document->document->numPages();
 
-    PaperItem * iter1 = new PaperItem(i, image1);
-    iter1->setPos(QPoint(0, image1->height()*i));
-    mainscene->addItem(iter1);
+//    PaperItem * iter1 = new PaperItem(i, image1);
+//    iter1->setPos(QPoint(0, image1->height()*i));
+//    mainscene->addItem(iter1);
 
-    setSceneRect(0, 0, mainscene->width, mainscene->height);
+//    setSceneRect(0, 0, mainscene->width, mainscene->height);
 
-    QMatrix matrix;
-    matrix.scale(1, 1);
-    matrix.rotate(0);
-    setMatrix(matrix);
-    centerPoint = currentScenePoint*scalefactor/oldscalefactor+lengthPoint;
-    centerOn(centerPoint.x(), centerPoint.y());
+//    QMatrix matrix;
+//    matrix.scale(1, 1);
+//    matrix.rotate(0);
+//    setMatrix(matrix);
+//    centerPoint = currentScenePoint*scalefactor/oldscalefactor+lengthPoint;
+//    centerOn(centerPoint.x(), centerPoint.y());
 
-    oldscalefactor = scalefactor;
+//    oldscalefactor = scalefactor;
 
-    update();
-    mainscene->update();
+//    update();
+//    mainscene->update();
 
-    for(int i=0; i<mainscene->document->numPages(); i++)
-    {
-        if(i!=mainscene->currentpage)
-        {
-            QImage *image = new QImage(mainscene->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
+//    for(int i=0; i<mainscene->document->document->numPages(); i++)
+//    {
+//        if(i!=mainscene->currentpage)
+//        {
+//            QImage *image = new QImage(mainscene->document->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
 
-            mainscene->pages.append(new PaperItem(i, image));
-            mainscene->pages.at(i)->setPos(QPoint(0, image->height()*i));
-            mainscene->addItem(mainscene->pages.at(i));
-        }
-        else
-        {
-            mainscene->pages.append(iter1);
-        }
-    }
+//            mainscene->pages.append(new PaperItem(i, image));
+//            mainscene->pages.at(i)->setPos(QPoint(0, image->height()*i));
+//            mainscene->addItem(mainscene->pages.at(i));
+//        }
+//        else
+//        {
+//            mainscene->pages.append(iter1);
+//        }
+//    }
 }
 
 void GraphicsView::timeStopped()
@@ -516,17 +530,12 @@ void GraphicsView::timeStopped()
     refreshtimer->stop();
 }
 
-PaperItem::~PaperItem()
-{
-    delete image;
-}
-
 QRectF PaperItem::boundingRect() const
 {
-    return QRectF(0, 0, image->width(), image->height());
+    return QRectF(0, 0, images.at(index)->width(), images.at(index)->height());
 }
 
 void PaperItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    painter->drawImage(0, 0, *image);
+    painter->drawImage(0, 0, *(images.at(index)));
 }

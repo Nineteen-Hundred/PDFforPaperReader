@@ -44,7 +44,8 @@ private:
 class PopupTextAnnotation : public Annotation
 {
 public:
-    PopupTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height) {
+    PopupTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor) {
+        this->scale = scalefactor;
         this->index = index;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
@@ -115,8 +116,9 @@ private:
 class GeomAnnotation : public Annotation
 {
 public:
-    GeomAnnotation(int index, Poppler::GeomAnnotation *annotation, int width, int height) {
+    GeomAnnotation(int index, Poppler::GeomAnnotation *annotation, int width, int height, double scalefactor) {
         this->index = index;
+        this->scale = scalefactor;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
                annotation->boundary().y()*height*scale +index*scale*height);
@@ -180,7 +182,7 @@ private:
 class LineAnnotation : public Annotation
 {
 public:
-    LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height);
+    LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height, double scalefactor);
     QPainterPath shape() const override;
     QRectF boundingRect()const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
