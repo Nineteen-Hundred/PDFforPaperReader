@@ -3,19 +3,26 @@
 
 #include <poppler-qt5.h>
 #include <QQueue>
-#include <QObject>
+#include <QTimer>
+#include <QDesktopWidget>
+#include <QApplication>
+#include <QTime>
+#include <QDebug>
 
-class AutoDocument : public QObject
+class AutoDocument : public QWidget
 {
+    Q_OBJECT
 public:
     AutoDocument();
     Poppler::Document *document;
-    QVector <QImage *> images;
+    QImage *images[1000];
     double scale = 1;
 
     QQueue<int> indexes;
 
     void updateImages();
+    QTimer *timer;
+    void startTimer();
 
 signals:
     void imageCompleted(int index);

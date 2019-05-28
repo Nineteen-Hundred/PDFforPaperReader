@@ -1,26 +1,35 @@
 #include "autodocument.h"
-#include <QDesktopWidget>
-#include <QApplication>
-#include <QTime>
 
-AutoDocument::AutoDocument() : QObject()
+AutoDocument::AutoDocument()
 {
-
+    timer = new QTimer();
 }
 
 void AutoDocument::updateImages()
 {
-    QDesktopWidget *mydesk = QApplication::desktop();
-    double xres = mydesk->physicalDpiX();
-    double yres = mydesk->physicalDpiY();
-    QTime t;
-    t.start();
+    qDebug() << "success";
 
-    while(images.isEmpty())
+    if(timer->isActive())
+        timer->stop();
+    QDesktopWidget *mydesk = QApplication::desktop();
+    double xres = mydesk->physicalDpiX()*scale;
+    double yres = mydesk->physicalDpiY()*scale;
+
+    while(!(indexes.isEmpty()))
     {
         int tmpindex = indexes.dequeue();
         QImage *image = new QImage(document->page(tmpindex)->renderToImage(xres, yres, -1, -1, -1, -1));
-        images.replace(tmpindex, image);
-        emit imageCompleted(tmpindex);
+        QImage *tmpimage = images[tmpindex];
+        //delete tmpimage;
+        images[tmpindex] = image;
+        qDebug() << "success" << images[tmpindex]->height() << indexes.isEmpty();
     }
+
+    timer->start(500);
+}
+
+void AutoDocument::startTimer()
+{
+    timer->start(500);
+    connect(timer, &QTimer::timeout, this, &AutoDocument::updateImages);
 }

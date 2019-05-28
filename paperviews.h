@@ -23,16 +23,18 @@
 #include <QCursor>
 #include <autodocument.h>
 #include <QThread>
+#include <unistd.h>
 
 class MainFrame;
 
 class PaperItem : public QGraphicsItem
 {
 public:
-    PaperItem(int index, QVector <QImage *> images) {this->index=index; this->images = images; setZValue(-10);}
+    PaperItem(int index, long imagess) {this->index=index; this->images = imagess; setZValue(-10);}
     QImage *image;
-    QVector <QImage *> images;
+    long images;
     int index;
+    long size = sizeof(QImage *);
     virtual QRectF boundingRect()const override;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 };
@@ -71,6 +73,8 @@ public:
     QPointF startPoint, endPoint;
     void newFlatText(const QString &text, QFont font, QColor color);
     void newPopupText(const QString &text, QFont font, QColor color);
+    QVector<int> indexes;
+    void updateItem(int index);
 
 private:
     //Poppler::Document *document;
