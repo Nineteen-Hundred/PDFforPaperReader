@@ -2,22 +2,24 @@
 
 AnnoToolbar::AnnoToolbar()
 {
-    open_action = new QAction(QIcon(":/image/text"), tr("Open"), this);
+    open_action = new QAction(QIcon(":/image/open"), tr("打开"), this);
     addAction(open_action);
-    saving_action = new QAction(QIcon(":/image/text"), tr("Save"), this);
+    saving_action = new QAction(QIcon(":/image/save"), tr("保存"), this);
     addAction(saving_action);
-    saving_as_action = new QAction(QIcon(":/image/text"), tr("Save As"), this);
+    saving_as_action = new QAction(QIcon(":/image/save_as"), tr("另存为"), this);
     addAction(saving_as_action);
-    preview_action = new QAction(QIcon(":/image/text"), tr("Preview"), this);
+    preview_action = new QAction(QIcon(":/image/preview"), tr("概览模式"), this);
     addAction(preview_action);
+    about_action = new QAction(QIcon(":/image/about"), tr("关于"), this);
+    addAction(about_action);
 
+    addSeparator();
 
-    group.append(new QAction(QIcon(":/image/text"), tr("Line"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Flat Text"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Popup Text"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Circle"), this));
-    group.append(new QAction(QIcon(":/image/text"), tr("Rectangle"), this));
-    //group.append(new QAction(QIcon(":/image/text"), tr("Ink"), this));
+    group.append(new QAction(QIcon(":/image/arrow"), tr("箭头"), this));
+    group.append(new QAction(QIcon(":/image/text"), tr("文字"), this));
+    group.append(new QAction(QIcon(":/image/comment"), tr("注释"), this));
+    group.append(new QAction(QIcon(":/image/circle"), tr("圆形"), this));
+    group.append(new QAction(QIcon(":/image/rect"), tr("方形"), this));
 
     for(int i=0; i<group.count(); i++)
     {
@@ -26,9 +28,11 @@ AnnoToolbar::AnnoToolbar()
         connect(group.at(i), &QAction::triggered, this, &AnnoToolbar::sendDrawing);
     }
 
-    setIconSize(QSize(10,10));
+    setIconSize(QSize(20,20));
     setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     setMovable(false);
+
+    connect(about_action, &QAction::triggered, this, &AnnoToolbar::showAbout);
 }
 
 void AnnoToolbar::sendDrawing()
@@ -50,4 +54,8 @@ void AnnoToolbar::sendDrawing()
     {
         emit isDrawing(action->text(), false);
     }
+}
+
+void AnnoToolbar::showAbout()
+{
 }

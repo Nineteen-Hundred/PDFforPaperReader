@@ -59,22 +59,24 @@ void MainScene::loadFile(const QString &addr)
             case 1:  // Text Annotation
             {
                 Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(document->document->page(pageidx)->annotations().at(i));
+                annotation->setFlags(Poppler::Annotation::Hidden);
                 if(annotation->textType()==1)
                 {
-                    annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, width, height/document->document->numPages()));
+                    annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
                 }
                 else {
                     annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
                     annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
+                    this->addItem(annotations.last());
                 }
                 break;
             }
             case 3:  // Geom Annotation
             {
                 Poppler::GeomAnnotation *annotation = (Poppler::GeomAnnotation *)(document->document->page(pageidx)->annotations().at(i));
-
+                annotation->setFlags(Poppler::Annotation::Hidden);
                 annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
                 break;
@@ -82,7 +84,7 @@ void MainScene::loadFile(const QString &addr)
             case 2:
             {
                 Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(document->document->page(pageidx)->annotations().at(i));
-
+                annotation->setFlags(Poppler::Annotation::Hidden);
                 annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
 
@@ -95,8 +97,8 @@ void MainScene::loadFile(const QString &addr)
             case 6:  // Ink Annotation
             {
                 Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(document->document->page(pageidx)->annotations().at(i));
-
-                annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, width, height/document->document->numPages()));
+                annotation->setFlags(Poppler::Annotation::Hidden);
+                annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
                 break;
             }
@@ -316,27 +318,27 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void MainScene::changeIsDrawing(const QString &text, bool isDrawing)
 {
     qDebug() << "changejici";
-    if(text==tr("Line"))
+    if(text==tr("箭头"))
     {
         shape = LINE;
     }
-    else if(text==tr("Arrow"))
+    else if(text==tr("箭头"))
     {
         shape = ARROW;
     }
-    else if(text==tr("Circle"))
+    else if(text==tr("圆形"))
     {
         shape = CIRCLE;
     }
-    else if(text==tr("Rectangle"))
+    else if(text==tr("方形"))
     {
         shape = RECTANGLE;
     }
-    else if(text==tr("Flat Text"))
+    else if(text==tr("文字"))
     {
         shape = FLATTEXT;
     }
-    else if(text==tr("Popup Text"))
+    else if(text==tr("注释"))
     {
         shape = POPUPTEXT;
     }
@@ -381,7 +383,7 @@ void MainScene::newFlatText(const QString &text, QFont font, QColor color)
                                    (totallength/hdistance>1?hdistance:totallength)/scale/width,
                                    ((totallength/hdistance+1)*annotation->textFont().pointSize()+20>vdistance?vdistance:(totallength/hdistance+1)*scale*annotation->textFont().pointSize()+20)/scale/imageheight));
     document->document->page(index)->addAnnotation(annotation);
-    annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width, imageheight));
+    annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width/scale, imageheight/scale, scale));
     this->addItem(annotations.at(annotations.length()-1));
 }
 
@@ -475,9 +477,9 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
         else
         {
             refreshtimer->stop();
-            point = mapToScene(QPoint(this->x()*0.8+this->width()/2*0.8, this->y()*0.8+this->height()/2*0.8));
-            scale(0.8, 0.8);
-            scalefactor*=0.8;
+            point = mapToScene(QPoint(this->x()/1.2+this->width()/2/1.2, this->y()/1.2+this->height()/2/1.2));
+            scale(1/1.2, 1/1.2);
+            scalefactor*=1/1.2;
             mainscene->scale = scalefactor;
             QPointF lengthPoint = oldCenterPoint-currentScenePoint;
             centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
@@ -495,14 +497,17 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
 void GraphicsView::updateSize()
 {
     refreshtimer->stop();
-    mainscene->annotations.clear();
     mainscene->document->scale = scalefactor;
     mainscene->scale = scalefactor;
-    qDebug() << mainscene->scale;
 
+    for(int i=0; i<mainscene->annotations.length();i++)
+    {
+        mainscene->removeItem(mainscene->annotations.at(i));
+        delete mainscene->annotations.at(i);
+    }
+    mainscene->annotations.clear();
+    mainscene->annotations.clear();
     mainscene->document->indexes.clear();
-
-    //sleep(1);
 
     mainscene->document->timer->stop();
 
@@ -516,7 +521,6 @@ void GraphicsView::updateSize()
     QImage *tmpimage = mainscene->document->images[idx];
     delete tmpimage;
     mainscene->document->images[idx] = image1;
-
 
     mainscene->width = image1->width();
     mainscene->height = image1->height()*mainscene->document->document->numPages();
@@ -544,8 +548,65 @@ void GraphicsView::updateSize()
             mainscene->document->indexes.append(i);
         }
     }
+
+    for(int pageidx=0; pageidx<mainscene->document->document->numPages(); pageidx++)
+    {
+        for(int i=0;i<mainscene->document->document->page(pageidx)->annotations().length();i++)
+        {
+            switch(mainscene->document->document->page(pageidx)->annotations().at(i)->subType())
+            {
+            case 1:  // Text Annotation
+            {
+                Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+                if(annotation->textType()==1)
+                {
+                    mainscene->annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, scalefactor));
+                    mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+                }
+                else {
+                    mainscene->annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+                    mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+                    mainscene->annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+                    mainscene->addItem(mainscene->annotations.last());
+                }
+                break;
+            }
+            case 3:  // Geom Annotation
+            {
+                Poppler::GeomAnnotation *annotation = (Poppler::GeomAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+
+                mainscene->annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+                break;
+            }
+            case 2:  // Line Annotation
+            {
+                Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+
+                mainscene->annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+
+//                QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
+//                mainscene->startPoint = rwIterator.next();
+//                rwIterator.toBack();
+//                mainscene->endPoint = rwIterator.previous();
+                break;
+            }
+            case 6:  // Ink Annotation
+            {
+                Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+
+                mainscene->annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, scalefactor));
+                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+                break;
+            }
+            }
+        }
+    }
+
     connect(this, &GraphicsView::timerStarting, mainscene->document, &AutoDocument::updateImages);
     emit timerStarting();
+    qDebug() << "successfully enter the function";
 }
 
 void GraphicsView::timeStopped()

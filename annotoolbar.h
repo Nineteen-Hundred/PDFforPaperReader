@@ -4,6 +4,8 @@
 #include <QToolBar>
 #include <QAction>
 #include <QDebug>
+#include <QDialog>
+#include <QMessageBox>
 
 class AnnoAction : public QAction
 {
@@ -20,12 +22,13 @@ class AnnoToolbar : public QToolBar
 public:
     AnnoToolbar();
     //QAction *actions[8];
-    QAction *saving_action, *saving_as_action, *open_action, *preview_action;
+    QAction *saving_action, *saving_as_action, *open_action, *preview_action, *about_action;
     QList<QAction *> group;
     void sendDrawing();
     void sendSaving();
     void sendSavingAs();
     void sendOpening();
+    void showAbout();
 
 signals:
     void isDrawing(const QString &text, bool is_drawing);

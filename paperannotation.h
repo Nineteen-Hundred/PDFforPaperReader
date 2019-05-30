@@ -73,8 +73,9 @@ private:
 class FlatTextAnnotation : public Annotation
 {
 public:
-    FlatTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height) {
+    FlatTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor) {
         this->index = index;
+        this->scale = scalefactor;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
                annotation->boundary().y()*height*scale +index*scale*height);
@@ -155,13 +156,14 @@ private:
 class InkAnnotation : public Annotation
 {
 public:
-    InkAnnotation(int index, Poppler::InkAnnotation *annotation, int width, int height) {
+    InkAnnotation(int index, Poppler::InkAnnotation *annotation, int width, int height, double scalefactor) {
         this->index = index;
+        this->scale = scalefactor;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
                annotation->boundary().y()*height*scale +index*scale*height);
     }
-//    QPainterPath shape() const override;
+
     QRectF boundingRect() const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
                    annotation->boundary().height()*height*scale);}
@@ -207,6 +209,7 @@ private:
 
 class PreviewAnnotation : public Annotation
 {
+    Q_OBJECT
 public:
     PreviewAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor);
     //QPainterPath shape() const override;
@@ -222,5 +225,8 @@ public:
     bool isSelected = false;
     QString practicalText;
     QPointF startPoint, endPoint, rect_width, rect_height;
+    int textpointsize = 16;
+    int textperline = 12;
+    int linenum = 4;
 };
 }
