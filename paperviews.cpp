@@ -16,6 +16,7 @@ MainScene::MainScene()
     QDesktopWidget *mydesk = QApplication::desktop();
     xres = mydesk->physicalDpiX();
     yres = mydesk->physicalDpiY();
+    connect(document, &AutoDocument::imageCompleted, this, &MainScene::updateScene);
 }
 
 void MainScene::loadFile(const QString &addr)
@@ -44,7 +45,6 @@ void MainScene::loadFile(const QString &addr)
         }
         document->images[i] = image;
         QImage *tmptmp = *(&(document->images[0]));
-        qDebug() << "testfor" << tmptmp->width() << tmptmp->height() << &(document->images[0]);
         pages.append(new PaperItem(i, (long)(&(document->images[0]))));
         pages.at(i)->setPos(0, image->height()*i);
         addItem(pages.at(i));
@@ -67,6 +67,7 @@ void MainScene::loadFile(const QString &addr)
                 else {
                     annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
+                    annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 }
                 break;
             }
@@ -408,6 +409,11 @@ void MainScene::updateItem(int index)
 
 }
 
+void MainScene::updateScene()
+{
+    update();
+}
+
 MainFrame::MainFrame()
 {
     graphicsview = new GraphicsView(this);
@@ -508,7 +514,7 @@ void GraphicsView::updateSize()
     int idx = mainscene->currentpage;
     QImage *image1 = new QImage(mainscene->document->document->page(idx)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
     QImage *tmpimage = mainscene->document->images[idx];
-    //delete tmpimage;
+    delete tmpimage;
     mainscene->document->images[idx] = image1;
 
 
@@ -516,6 +522,10 @@ void GraphicsView::updateSize()
     mainscene->height = image1->height()*mainscene->document->document->numPages();
 
     setSceneRect(0, 0, mainscene->width, mainscene->height);
+
+    update();
+    mainscene->update();
+    mainscene->pages.at(idx)->update();
 
     QMatrix matrix;
     matrix.scale(1, 1);
@@ -526,9 +536,6 @@ void GraphicsView::updateSize()
 
     oldscalefactor = scalefactor;
 
-    update();
-    mainscene->update();
-
     for(int i=0; i<mainscene->document->document->numPages(); i++)
     {
         mainscene->pages.at(i)->setPos(0, image1->height()*i);
@@ -537,24 +544,8 @@ void GraphicsView::updateSize()
             mainscene->document->indexes.append(i);
         }
     }
-
-    mainscene->document->timer->start(500);
-
-//    for(int i=0; i<mainscene->document->document->numPages(); i++)
-//    {
-//        if(i!=mainscene->currentpage)
-//        {
-//            QImage *image = new QImage(mainscene->document->document->page(i)->renderToImage(mainscene->xres*mainscene->scale, mainscene->yres*mainscene->scale, -1, -1, -1, -1));
-
-//            mainscene->pages.append(new PaperItem(i, image));
-//            mainscene->pages.at(i)->setPos(QPoint(0, image->height()*i));
-//            mainscene->addItem(mainscene->pages.at(i));
-//        }
-//        else
-//        {
-//            mainscene->pages.append(iter1);
-//        }
-//    }
+    connect(this, &GraphicsView::timerStarting, mainscene->document, &AutoDocument::updateImages);
+    emit timerStarting();
 }
 
 void GraphicsView::timeStopped()
@@ -565,13 +556,11 @@ void GraphicsView::timeStopped()
 QRectF PaperItem::boundingRect() const
 {
     QImage **addr = (QImage **)(images + index*size);
-    qDebug() << "all test" << (*addr)->width() << (*addr)->height() << index << addr;
     return QRectF(0, 0, (*addr)->width(), (*addr)->height());
 }
 
 void PaperItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QImage **addr = (QImage **)(images + index*size);
-    qDebug() << "all test" << (*addr)->width() << (*addr)->height() << index << addr;
     painter->drawImage(0, 0, **addr);
 }

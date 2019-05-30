@@ -9,7 +9,7 @@
 #include <QTime>
 #include <QDebug>
 
-class AutoDocument : public QWidget
+class AutoDocument : public QObject
 {
     Q_OBJECT
 public:
@@ -25,7 +25,7 @@ public:
     void startTimer();
 
 signals:
-    void imageCompleted(int index);
+    void imageCompleted();
 };
 
 #endif // AUTODOCUMENT_H

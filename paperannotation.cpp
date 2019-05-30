@@ -665,3 +665,39 @@ void PaperAnnotation::InkAnnotation::setNewStyle(const QColor &color, int width)
     style.setWidth(width);
     annotation->setStyle(style);
 }
+
+PaperAnnotation::PreviewAnnotation::PreviewAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor)
+{
+    int textpointsize = 12;
+    int linenum = 4;
+    int textlength = annotation->contents().length();
+    this->width = width;
+    this->height = height;
+    this->scale = scalefactor;
+    if(textlength>textpointsize*linenum)
+    {
+        practicalText = annotation->contents().mid(0, textpointsize*linenum-4).append("...");
+    }
+    else
+    {
+        practicalText = annotation->contents();
+    }
+
+    if(isLeft)
+    {
+        startPoint = QPointF(50*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
+        endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-textpointsize*5>0)?
+                               (annotation->boundary().y()*scale*height-textpointsize*5):0)+ index*height*scale);
+    }
+    else
+    {
+        startPoint = QPointF((width-50)*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
+        endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-textpointsize*5>0)?
+                               (annotation->boundary().y()*scale*height-textpointsize*5):0)+ index*height*scale);
+    }
+}
+
+void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->drawLine(startPoint, endPoint);
+}

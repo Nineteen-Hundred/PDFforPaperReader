@@ -75,10 +75,11 @@ public:
     void newPopupText(const QString &text, QFont font, QColor color);
     QVector<int> indexes;
     void updateItem(int index);
+    void updateScene();
+    AutoDocument *document;
 
 private:
     //Poppler::Document *document;
-    AutoDocument *document;
     //PaperWidgets *paperwidgets;
     QList<PaperItem *> pages;
     QGraphicsProxyWidget *paperproxywidget;
@@ -117,6 +118,7 @@ private:
 
 signals:
     void sizeChanged(qreal deltascale, qreal rotate);
+    void timerStarting();
 };
 
 class MainFrame : public QFrame

@@ -204,4 +204,23 @@ private:
     QPointF startPoint;
     QPointF endPoint;
 };
+
+class PreviewAnnotation : public Annotation
+{
+public:
+    PreviewAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor);
+    //QPainterPath shape() const override;
+    QRectF boundingRect()const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
+    Poppler::TextAnnotation *annotation;
+    int height, width = 0;
+    bool isLeft = true;
+    bool isZoom = false;
+    int textwidthnum = 10;
+    int textheight = 0;
+    bool isSelected = false;
+    QString practicalText;
+    QPointF startPoint, endPoint, rect_width, rect_height;
+};
 }
