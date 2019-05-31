@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     removeToolBar(ui->mainToolBar);
     toolbar = new AnnoToolbar;
     addToolBar(toolbar);
+    setWindowTitle(tr("Bamboo PDF阅读器"));
 
     mainscene = new MainScene();
 
@@ -30,7 +31,6 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setCentralWidget(totalSpliter);
 
     QString filename = "/home/pysong/下载/A Very Brief Introduction to Machine Learning With Applications to Communication Systems.pdf";
-    //QString filename = "/home/pysong/下载/finalpaperfile.pdf";
     mainscene->loadFile(filename);
 
 
@@ -42,4 +42,9 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setPaperTitle()
+{
+
 }

@@ -227,6 +227,7 @@ public:
     QPointF startPoint, endPoint, rect_width, rect_height;
     int textpointsize = 16;
     int textperline = 12;
+    int textlinespacing = 10;
     int linenum = 4;
 };
 }

@@ -525,7 +525,7 @@ void GraphicsView::updateSize()
     mainscene->width = image1->width();
     mainscene->height = image1->height()*mainscene->document->document->numPages();
 
-    setSceneRect(0, 0, mainscene->width, mainscene->height);
+    setSceneRect(-200, 0, mainscene->width+200, mainscene->height);
 
     update();
     mainscene->update();
@@ -606,7 +606,7 @@ void GraphicsView::updateSize()
 
     connect(this, &GraphicsView::timerStarting, mainscene->document, &AutoDocument::updateImages);
     emit timerStarting();
-    qDebug() << "successfully enter the function";
+    connect(this->mainscene->document, &AutoDocument::imageCompleted, this->mainscene, &MainScene::updateScene);
 }
 
 void GraphicsView::timeStopped()

@@ -26,6 +26,7 @@ public:
     SideScene *leftscene, *rightscene;
     QThread *scenethread;
     AnnoToolbar *toolbar;
+    void setPaperTitle();
 
 private:
     Ui::MainWindow *ui;

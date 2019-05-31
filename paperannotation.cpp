@@ -661,9 +661,10 @@ PaperAnnotation::PreviewAnnotation::PreviewAnnotation(int index, Poppler::TextAn
     this->scale = scalefactor;
     this->index = index;
     this->annotation = annotation;
+
     if(textlength>textperline*linenum)
     {
-        practicalText = QString("%1%2").arg(annotation->contents().mid(0, textpointsize*linenum-4), "......");
+        practicalText = QString("%1%2").arg(annotation->contents().mid(0, textperline*linenum-4), "......");
     }
     else
     {
@@ -674,17 +675,39 @@ PaperAnnotation::PreviewAnnotation::PreviewAnnotation(int index, Poppler::TextAn
 
     if(isLeft)
     {
-        startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
-        endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-textpointsize*linenum>0)?
-                                   (annotation->boundary().y()*scale*height-textpointsize*linenum):0)+index*height*scale);
-        setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
+        if(textlength>textperline*linenum)
+        {
+            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
+                                       (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)+index*height*scale);
+            setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
+        }
+        else
+        {
+            int pract_linenum = (int)(annotation->contents().length()/textperline);
+            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
+                                       (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)+index*height*scale);
+            setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
+        }
     }
     else
     {
-        startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
-        endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-textpointsize*5>0)?
-                                             (annotation->boundary().y()*scale*height-textpointsize*5):0)+ index*height*scale);
-        setPos(startPoint.x(), startPoint.y()-boundingRect().height());
+        if(textlength>textperline*linenum)
+        {
+            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
+                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)+ index*height*scale);
+            setPos(startPoint.x(), startPoint.y()-boundingRect().height());
+        }
+        else
+        {
+            int pract_linenum = (int)(annotation->contents().length()/textperline)+1;
+            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
+                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)+ index*height*scale);
+            setPos(startPoint.x(), startPoint.y()-boundingRect().height());
+        }
     }
 
 
@@ -695,22 +718,34 @@ QRectF PaperAnnotation::PreviewAnnotation::boundingRect() const
 {
     if(isSelected)
     {
+        if(isLeft)
+        {
+
+        }
+        else
+        {
+
+        }
     }
     else
     {
         if(isLeft)
         {
-            return QRectF(0, 0, (textpointsize*textperline+annotation->boundary().x()*width)*scale, (textpointsize*linenum)*scale);
+            return QRectF(0, 0, (textpointsize*textperline+annotation->boundary().x()*width)+8, ((textpointsize+textlinespacing)*linenum));
         }
         else
         {
-            return QRectF(0, 0,  (textpointsize*textperline+(1-annotation->boundary().x())*width)*scale, (textpointsize*linenum)*scale);
+            return QRectF(0, 0,  (textpointsize*textperline+(1-annotation->boundary().x())*width)+8, ((textpointsize+textlinespacing)*linenum));
         }
     }
 }
 
 void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    QFont font;
+    font.setPixelSize(textpointsize);
+    painter->setFont(font);
+
     if(isSelected)
     {
 
@@ -719,24 +754,26 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
     {
         if(isLeft)
         {
-            QRectF textbox = QRectF(QPointF(0, 0), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos());
+            QRectF rectbox = QRectF(QPointF(0, 0), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos());
+            QRectF textbox = QRectF(QPointF(0, 0)+QPointF(4, 4), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos()-QPointF(4,4));
             QPen pen;
             pen.setWidth(2);
             painter->setPen(pen);
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawLine(startPoint-pos(), endPoint-pos());
-            painter->drawRect(textbox);
+            painter->drawRect(rectbox);
             painter->drawText(textbox, practicalText);
         }
         else
         {
-            QRectF textbox = QRectF(endPoint-pos(), boundingRect().bottomRight());
+            QRectF rectbox = QRectF(endPoint-pos(), boundingRect().bottomRight());
+            QRectF textbox = QRectF(endPoint-pos()+QPointF(4,4), boundingRect().bottomRight()-QPointF(4,4));
             QPen pen;
             pen.setWidth(2);
             painter->setPen(pen);
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawLine(startPoint-pos(), endPoint-pos());
-            painter->drawRect(textbox);
+            painter->drawRect(rectbox);
             painter->drawText(textbox, practicalText);
         }
     }
