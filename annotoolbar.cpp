@@ -20,6 +20,7 @@ AnnoToolbar::AnnoToolbar()
     group.append(new QAction(QIcon(":/image/comment"), tr("注释"), this));
     group.append(new QAction(QIcon(":/image/circle"), tr("圆形"), this));
     group.append(new QAction(QIcon(":/image/rect"), tr("方形"), this));
+    group.append(new QAction(QIcon(":/image/gaoliang"), tr("高亮"), this));
 
     for(int i=0; i<group.count(); i++)
     {

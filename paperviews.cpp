@@ -35,6 +35,8 @@ void MainScene::loadFile(const QString &addr)
     document->document->setRenderHint(Poppler::Document::TextAntialiasing, 1);
     document->document->setRenderHint(Poppler::Document::Antialiasing, 1);
 
+
+
     for(int i=0; i<document->document->numPages(); i++)
     {
         QImage *image = new QImage(document->document->page(i)->renderToImage(xres, yres, -1, -1, -1, -1));
@@ -49,6 +51,9 @@ void MainScene::loadFile(const QString &addr)
         pages.at(i)->setPos(0, image->height()*i);
         addItem(pages.at(i));
     }
+
+    setSceneRect(0, 0, width, height);
+    document->startTimer();
 
     for(int pageidx=0; pageidx<document->document->numPages(); pageidx++)
     {
@@ -105,9 +110,6 @@ void MainScene::loadFile(const QString &addr)
             }
         }
     }
-
-    setSceneRect(0, 0, width, height);
-    document->startTimer();
 }
 
 void MainScene::updateSize()

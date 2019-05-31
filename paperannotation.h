@@ -229,5 +229,8 @@ public:
     int textperline = 12;
     int textlinespacing = 10;
     int linenum = 4;
+
+    void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 };
 }

@@ -748,7 +748,31 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
 
     if(isSelected)
     {
-
+        if(isLeft)
+        {
+            QRectF rectbox = QRectF(QPointF(0, 0), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos());
+            QRectF textbox = QRectF(QPointF(0, 0)+QPointF(4, 4), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos()-QPointF(4,4));
+            painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->drawLine(startPoint-pos(), endPoint-pos());
+            painter->drawRect(rectbox);
+            painter->drawText(textbox, practicalText);
+            painter->setBrush(QBrush(Qt::black, Qt::SolidPattern));
+            painter->drawEllipse(startPoint-pos(), 3, 3);
+        }
+        else
+        {
+            QRectF rectbox = QRectF(endPoint-pos(), boundingRect().bottomRight());
+            QRectF textbox = QRectF(endPoint-pos()+QPointF(4,4), boundingRect().bottomRight()-QPointF(4,4));
+            painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->drawEllipse(startPoint-pos(), 3, 3);
+            painter->drawLine(startPoint-pos(), endPoint-pos());
+            painter->drawRect(rectbox);
+            painter->drawText(textbox, practicalText);
+            painter->setBrush(QBrush(Qt::black, Qt::SolidPattern));
+            painter->drawEllipse(startPoint-pos(), 3, 3);
+        }
     }
     else
     {
@@ -756,25 +780,38 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
         {
             QRectF rectbox = QRectF(QPointF(0, 0), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos());
             QRectF textbox = QRectF(QPointF(0, 0)+QPointF(4, 4), startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos()-QPointF(4,4));
-            QPen pen;
-            pen.setWidth(2);
-            painter->setPen(pen);
+            painter->setPen(QPen(Qt::gray, 2, Qt::SolidLine));
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawLine(startPoint-pos(), endPoint-pos());
             painter->drawRect(rectbox);
             painter->drawText(textbox, practicalText);
+            painter->setBrush(QBrush(Qt::gray, Qt::SolidPattern));
+            painter->drawEllipse(startPoint-pos(), 3, 3);
         }
         else
         {
             QRectF rectbox = QRectF(endPoint-pos(), boundingRect().bottomRight());
             QRectF textbox = QRectF(endPoint-pos()+QPointF(4,4), boundingRect().bottomRight()-QPointF(4,4));
-            QPen pen;
-            pen.setWidth(2);
-            painter->setPen(pen);
+            painter->setPen(QPen(Qt::gray, 2, Qt::SolidLine));
             painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->drawEllipse(startPoint-pos(), 3, 3);
             painter->drawLine(startPoint-pos(), endPoint-pos());
             painter->drawRect(rectbox);
             painter->drawText(textbox, practicalText);
+            painter->setBrush(QBrush(Qt::gray, Qt::SolidPattern));
+            painter->drawEllipse(startPoint-pos(), 3, 3);
         }
     }
+}
+
+void PaperAnnotation::PreviewAnnotation::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    isSelected = true;
+    update();
+}
+
+void PaperAnnotation::PreviewAnnotation::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    isSelected = false;
+    update();
 }

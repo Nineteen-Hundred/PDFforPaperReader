@@ -10,5 +10,6 @@
         <file alias="circle">yuanxingweixuanzhong.png</file>
         <file alias="comment">zhibiaozhushibiaozhu.png</file>
         <file alias="about">iconset0142.png</file>
+        <file alias="gaoliang">fangxingxuanzhong.png</file>
     </qresource>
 </RCC>
