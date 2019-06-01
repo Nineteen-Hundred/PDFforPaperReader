@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/image">
+        <file alias="text">twenbenkuang.png</file>
+        <file alias="preview">yulan.png</file>
+        <file alias="rect">cub.png</file>
+        <file alias="open">dakai.png</file>
+        <file alias="arrow">one-line-arrow.png</file>
+        <file alias="save">baocun.png</file>
+        <file alias="save_as">baocun_1.png</file>
+        <file alias="circle">yuanxingweixuanzhong.png</file>
+        <file alias="comment">zhibiaozhushibiaozhu.png</file>
+        <file alias="about">iconset0142.png</file>
+        <file alias="gaoliang">fangxingxuanzhong.png</file>
+    </qresource>
+</RCC>
