@@ -2,7 +2,7 @@
 
 Bamboo多功能PDF阅读器用于PDF文档的打开和编辑，主要由文档收藏、页面交互、笔记系统三个部分组成。其中，文档收藏功能可搭配云盘工具（如坚果云）使用，实现与云端同步操作。笔记系统可兼容其它工具（如Foxit、Xodo等），由其它工具生成的笔记也可以使用本阅读器进行编辑。最后，概览功能用于在页面两侧显示注释文字，该功能非常适用于双栏文档（如论文）的阅读和回顾。
 
-![building](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg)![dependence](https://img.shields.io/david/dev/expressjs/express.svg)![platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-green.svg)![license](https://img.shields.io/badge/License-GPL--v2-orange.svg)
+![building](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg) ![dependence](https://img.shields.io/david/dev/expressjs/express.svg) ![platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-green.svg) ![license](https://img.shields.io/badge/License-GPL--v2-orange.svg)
 ## 文档收藏系统
 
 文档收藏系统主要用于提供不同位置目录的快捷入口，配合云盘工具（如坚果云）后，可以实现快速打开以及修改自动同步到云的功能。
