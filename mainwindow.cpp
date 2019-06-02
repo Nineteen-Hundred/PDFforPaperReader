@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     totalSpliter->addWidget(rightSpliter);
     this->setCentralWidget(totalSpliter);
 
-    QString filename = "/home/pysong/下载/A Very Brief Introduction to Machine Learning With Applications to Communication Systems.pdf";
+    QString filename = "/home/pysong/下载/An efficient implementation of lattice staggered multicarier faster than nyquist signaling.pdf";
     mainscene->loadFile(filename);
 
 

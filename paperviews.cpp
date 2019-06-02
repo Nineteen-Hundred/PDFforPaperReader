@@ -35,6 +35,18 @@ void MainScene::loadFile(const QString &addr)
     document->document->setRenderHint(Poppler::Document::TextAntialiasing, 1);
     document->document->setRenderHint(Poppler::Document::Antialiasing, 1);
 
+    /* set hidden */
+    for(int pageidx=0; pageidx<document->document->numPages(); pageidx++)
+    {
+        for(int i=0;i<document->document->page(pageidx)->annotations().length();i++)
+        {
+            int type = document->document->page(pageidx)->annotations().at(i)->subType();
+            if(type==1 || type==2 || type==3 || type==6)
+            {
+                document->document->page(pageidx)->annotations().at(i)->setFlags(Poppler::Annotation::Hidden);
+            }
+        }
+    }
 
 
     for(int i=0; i<document->document->numPages(); i++)
@@ -588,10 +600,10 @@ void GraphicsView::updateSize()
                 mainscene->annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
                 mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
 
-//                QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
-//                mainscene->startPoint = rwIterator.next();
-//                rwIterator.toBack();
-//                mainscene->endPoint = rwIterator.previous();
+                //                QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
+                //                mainscene->startPoint = rwIterator.next();
+                //                rwIterator.toBack();
+                //                mainscene->endPoint = rwIterator.previous();
                 break;
             }
             case 6:  // Ink Annotation
