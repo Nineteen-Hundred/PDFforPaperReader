@@ -8,7 +8,7 @@ Bamboo多功能PDF阅读器用于PDF文档的打开和编辑，主要由文档�
 
 文档收藏系统主要用于提供不同位置目录的快捷入口，配合云盘工具（如坚果云）后，可以实现快速打开以及修改自动同步到云的功能。
 
-<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/page.png?raw=true" width=70% height=70% />
+<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/documents.png?raw=true" width=70% height=70% />
 
 ## 笔记系统
 
