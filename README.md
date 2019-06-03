@@ -8,19 +8,19 @@ Bamboo多功能PDF阅读器用于PDF文档的打开和编辑，主要由文档�
 
 文档收藏系统主要用于提供不同位置目录的快捷入口，配合云盘工具（如坚果云）后，可以实现快速打开以及修改自动同步到云的功能。
 
-![documents](https://www.jianguoyun.com/c/tblv2/CMC4GhIgrdDeN-fhZ5YkTDcZpskhlIMTj8iUDQ9J-dzXAawyCsk/CAaZqQ2B3u4/l)
+<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/page.png?raw=true" width=70% height=70% />
 
 ## 笔记系统
 
 本阅读器支持文本、几何（圆形、方形）、箭头及注释笔记的创建和编辑。选中笔记后，左键拖动可改变笔记位置，右键点击可弹出对话框，以修改笔记的各类参数。
 
-![annotation](https://www.jianguoyun.com/c/tblv2/CMC4GhIg0hfVxL0tgPbwG_qZfy1NPa67Ok16rLsGZl3UKo9M8U8/ct4RvTAuEJA/l)
+<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/annotation.png?raw=true" width=70% height=70% />
 
 ## 概览模式
 
 概览模式是我们针对双栏文档阅读设计的功能，概览模式下，原本隐藏的注释可以通过弹框显示在文档两侧。首次阅读文档时，用户可将每一部分内容的翻译、总结或批注用注释形式进行保存，概览模式下，这些笔记将显示在对应位置两侧，非常便于对双栏论文进行回顾。
 
-![page](https://www.jianguoyun.com/c/tblv2/CMC4GhIgDARITZUfUns_q_UNVOGHUO5xbeTZ_Li6_FiYZ5bnLdA/KIItiXxhQfs/l)
+<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/page.png?raw=true" width=70% height=70% />
 
 ## 环境要求
 
