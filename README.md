@@ -14,7 +14,7 @@ Bamboo多功能PDF阅读器用于PDF文档的打开和编辑，主要由文档�
 
 本阅读器支持文本、几何（圆形、方形）、箭头及注释笔记的创建和编辑。选中笔记后，左键拖动可改变笔记位置，右键点击可弹出对话框，以修改笔记的各类参数。
 
-<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/annotation.png?raw=true" width=70% height=70% />
+<img src="https://github.com/pysong-xidian/PDFforPaperReader/blob/master/screenshots/annotation.png?raw=true" width=40% height=40% />
 
 ## 概览模式
 
