@@ -72,6 +72,7 @@ private:
 
 class FlatTextAnnotation : public Annotation
 {
+    Q_OBJECT
 public:
     FlatTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor) {
         this->index = index;
@@ -93,10 +94,14 @@ public:
 
     Poppler::TextAnnotation *annotation;
     int height, width = 0;
+    void readyForDelete();
 
 private:
     bool isMoving = false;
     void setNewStyle(const QString &text, const QFont &font, const QColor &color);
+
+signals:
+    void deleteSelf();
 };
 
 class LinkedTextAnnotation : public Annotation
@@ -116,6 +121,7 @@ private:
 
 class GeomAnnotation : public Annotation
 {
+    Q_OBJECT
 public:
     GeomAnnotation(int index, Poppler::GeomAnnotation *annotation, int width, int height, double scalefactor) {
         this->index = index;
@@ -136,9 +142,13 @@ public:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
     void setNewStyle(const QColor &color, int width);
+    void readyForDelete();
 
     Poppler::GeomAnnotation *annotation;
     int height, width = 0;
+
+signals:
+    void deleteSelf();
 };
 
 class LinkAnnotation : public Annotation

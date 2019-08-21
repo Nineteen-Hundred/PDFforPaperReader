@@ -47,6 +47,7 @@ void PaperAnnotation::FlatTextAnnotation::contextMenuEvent(QGraphicsSceneContext
 {
     AnnotationDialog::FlatTextDialog *dialog = new AnnotationDialog::FlatTextDialog(annotation->contents(), annotation->textFont(), annotation->textColor());
     connect(dialog, &AnnotationDialog::FlatTextDialog::configUpdated, this, &PaperAnnotation::FlatTextAnnotation::setNewStyle);
+    connect(dialog, &AnnotationDialog::FlatTextDialog::itemDeleted, this, &PaperAnnotation::FlatTextAnnotation::readyForDelete);
     dialog->exec();
 }
 
@@ -96,6 +97,11 @@ void PaperAnnotation::FlatTextAnnotation::mouseReleaseEvent(QGraphicsSceneMouseE
         annotation->setBoundary(boundary);
         QGraphicsItem::mouseReleaseEvent(event);
     }
+}
+
+void PaperAnnotation::FlatTextAnnotation::readyForDelete()
+{
+    emit this->deleteSelf();
 }
 
 void PaperAnnotation::FlatTextAnnotation::setNewStyle(const QString &text, const QFont &font, const QColor &color)
@@ -201,6 +207,7 @@ void PaperAnnotation::GeomAnnotation::contextMenuEvent(QGraphicsSceneContextMenu
 {
     AnnotationDialog::GeomDialog *dialog = new AnnotationDialog::GeomDialog(annotation->style().color(), (int)(annotation->style().width()));
     connect(dialog, &AnnotationDialog::GeomDialog::configUpdated, this, &PaperAnnotation::GeomAnnotation::setNewStyle);
+    connect(dialog, &AnnotationDialog::GeomDialog::itemDeleted, this, &PaperAnnotation::GeomAnnotation::readyForDelete);
     dialog->exec();
 }
 
@@ -258,6 +265,11 @@ void PaperAnnotation::GeomAnnotation::setNewStyle(const QColor &color, int width
     style.setColor(color);
     style.setWidth(width);
     annotation->setStyle(style);
+}
+
+void PaperAnnotation::GeomAnnotation::readyForDelete()
+{
+    emit this->deleteSelf();
 }
 
 PaperAnnotation::LineAnnotation::LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height, double scalefactor)

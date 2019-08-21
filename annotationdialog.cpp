@@ -309,6 +309,7 @@ void AnnotationDialog::GeomDialog::emitConfig()
 void AnnotationDialog::GeomDialog::emitDelete()
 {
     emit itemDeleted();
+    close();
 }
 
 AnnotationDialog::ColorBlocks::ColorBlocks(QColor color)

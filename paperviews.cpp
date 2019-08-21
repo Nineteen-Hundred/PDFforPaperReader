@@ -81,6 +81,10 @@ void MainScene::loadFile(const QString &addr)
                 {
                     annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
+                    // 添加删除接口
+                    connect((PaperAnnotation::FlatTextAnnotation *)(annotations.last()), &PaperAnnotation::FlatTextAnnotation::deleteSelf,
+                            this, &MainScene::removeCertainItem);
+//                    this->removeItem(tmprectitem);
                 }
                 else {
                     annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
@@ -96,6 +100,9 @@ void MainScene::loadFile(const QString &addr)
                 annotation->setFlags(Poppler::Annotation::Hidden);
                 annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
+                // 添加删除接口
+                connect((PaperAnnotation::GeomAnnotation *)(annotations.last()), &PaperAnnotation::GeomAnnotation::deleteSelf,
+                        this, &MainScene::removeCertainItem);
                 break;
             }
             case 2:
@@ -295,6 +302,9 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             document->document->page(index)->addAnnotation(geomannotation);
             annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
+            // 添加删除接口
+            connect((PaperAnnotation::GeomAnnotation *)(annotations.last()), &PaperAnnotation::GeomAnnotation::deleteSelf,
+                    this, &MainScene::removeCertainItem);
             this->removeItem(tmpellipseitem);
             break;
         }
@@ -314,6 +324,9 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
             annotations.at(annotations.length()-1)->scale = scale;
+            // 添加删除接口
+            connect((PaperAnnotation::GeomAnnotation *)(annotations.last()), &PaperAnnotation::GeomAnnotation::deleteSelf,
+                    this, &MainScene::removeCertainItem);
             this->removeItem(tmprectitem);
             break;
         }
@@ -428,6 +441,13 @@ void MainScene::updateItem(int index)
 void MainScene::updateScene()
 {
     update();
+}
+
+void MainScene::removeCertainItem()
+{
+    qDebug() << "成功删除该项目";
+    this->removeItem((PaperAnnotation::Annotation *)sender());
+    delete((PaperAnnotation::Annotation *)sender());
 }
 
 MainFrame::MainFrame()

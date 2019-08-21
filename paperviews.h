@@ -49,7 +49,7 @@ public:
     void loadFile(const QString &addr);
     void refreshView(qreal scale);
     void drawAnnotations();
-    QList<PaperAnnotation::Annotation *> annotations;
+    QVector<PaperAnnotation::Annotation *> annotations;
     void updateSize();
     int xres;
     int yres;
@@ -77,6 +77,7 @@ public:
     void updateItem(int index);
     void updateScene();
     AutoDocument *document;
+    void removeCertainItem();
 
 private:
     //Poppler::Document *document;
