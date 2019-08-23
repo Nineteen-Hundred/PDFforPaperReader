@@ -104,6 +104,11 @@ void PaperAnnotation::FlatTextAnnotation::readyForDelete()
     emit this->deleteSelf();
 }
 
+Poppler::Annotation *PaperAnnotation::FlatTextAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
 void PaperAnnotation::FlatTextAnnotation::setNewStyle(const QString &text, const QFont &font, const QColor &color)
 {
     annotation->setContents(text);
@@ -120,6 +125,12 @@ bool PaperAnnotation::Annotation::isInResizeArea(const QPointF &pos)
 {
     const qreal g_cResizePos[] = {9, 6, 3};
     return (pos.x() - boundingRect().width() + g_cResizePos[0]) > (boundingRect().height() - pos.y());
+}
+
+void PaperAnnotation::Annotation::resetpos()
+{
+    setPos(return_annotation()->boundary().x()*width*scale,
+           return_annotation()->boundary().y()*height*scale +index*scale*height);
 }
 
 void PaperAnnotation::GeomAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -272,6 +283,11 @@ void PaperAnnotation::GeomAnnotation::readyForDelete()
     emit this->deleteSelf();
 }
 
+Poppler::Annotation *PaperAnnotation::GeomAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
 PaperAnnotation::LineAnnotation::LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height, double scalefactor)
 {
     this->scale = scalefactor;
@@ -388,6 +404,7 @@ void PaperAnnotation::LineAnnotation::contextMenuEvent(QGraphicsSceneContextMenu
 {
     AnnotationDialog::GeomDialog *dialog = new AnnotationDialog::GeomDialog(annotation->style().color(), (int)(annotation->style().width()));
     connect(dialog, &AnnotationDialog::GeomDialog::configUpdated, this, &PaperAnnotation::LineAnnotation::setNewStyle);
+    connect(dialog, &AnnotationDialog::GeomDialog::itemDeleted, this, &PaperAnnotation::LineAnnotation::readyForDelete);
     dialog->exec();
 }
 
@@ -471,6 +488,16 @@ void PaperAnnotation::LineAnnotation::setNewStyle(const QColor &color, int width
     annotation->setStyle(style);
 }
 
+void PaperAnnotation::LineAnnotation::readyForDelete()
+{
+    emit this->deleteSelf();
+}
+
+Poppler::Annotation *PaperAnnotation::LineAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
 void PaperAnnotation::PopupTextAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     painter->setPen(annotation->textColor());
@@ -515,6 +542,7 @@ void PaperAnnotation::PopupTextAnnotation::contextMenuEvent(QGraphicsSceneContex
 {
     AnnotationDialog::FlatTextDialog *dialog = new AnnotationDialog::FlatTextDialog(annotation->contents(), annotation->textFont(), annotation->textColor());
     connect(dialog, &AnnotationDialog::FlatTextDialog::configUpdated, this, &PaperAnnotation::PopupTextAnnotation::setNewStyle);
+    connect(dialog, &AnnotationDialog::FlatTextDialog::itemDeleted, this, &PaperAnnotation::PopupTextAnnotation::readyForDelete);
     dialog->exec();
 }
 
@@ -565,6 +593,16 @@ void PaperAnnotation::PopupTextAnnotation::mouseReleaseEvent(QGraphicsSceneMouse
         QGraphicsItem::mouseReleaseEvent(event);
         QGraphicsItem::mouseReleaseEvent(event);
     }
+}
+
+Poppler::Annotation *PaperAnnotation::PopupTextAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
+void PaperAnnotation::PopupTextAnnotation::readyForDelete()
+{
+    emit this->deleteSelf();
 }
 
 void PaperAnnotation::PopupTextAnnotation::setNewStyle(const QString &text, const QFont &font, const QColor &color)
@@ -665,65 +703,21 @@ void PaperAnnotation::InkAnnotation::setNewStyle(const QColor &color, int width)
     annotation->setStyle(style);
 }
 
+Poppler::Annotation *PaperAnnotation::InkAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
 PaperAnnotation::PreviewAnnotation::PreviewAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor)
 {
-    int textlength = annotation->contents().length();
+    this->textlength = annotation->contents().length();
     this->width = width;
     this->height = height;
     this->scale = scalefactor;
     this->index = index;
     this->annotation = annotation;
 
-    if(textlength>textperline*linenum)
-    {
-        practicalText = QString("%1%2").arg(annotation->contents().mid(0, textperline*linenum-4), "......");
-    }
-    else
-    {
-        practicalText = annotation->contents();
-    }
-
-    isLeft = annotation->boundary().x()>0.5?false:true;
-
-    if(isLeft)
-    {
-        if(textlength>textperline*linenum)
-        {
-            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
-            endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
-                                       (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)+index*height*scale);
-            setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
-        }
-        else
-        {
-            int pract_linenum = (int)(annotation->contents().length()/textperline);
-            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
-            endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
-                                       (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)+index*height*scale);
-            setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
-        }
-    }
-    else
-    {
-        if(textlength>textperline*linenum)
-        {
-            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
-            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
-                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)+ index*height*scale);
-            setPos(startPoint.x(), startPoint.y()-boundingRect().height());
-        }
-        else
-        {
-            int pract_linenum = (int)(annotation->contents().length()/textperline)+1;
-            startPoint = QPointF(annotation->boundary().x()*width*scalefactor, annotation->boundary().y()*scale*height + index*height*scale);
-            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
-                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)+ index*height*scale);
-            setPos(startPoint.x(), startPoint.y()-boundingRect().height());
-        }
-    }
-
-
-    setFlag(QGraphicsItem::ItemIsMovable, false);
+    this->resetpos1();
 }
 
 QRectF PaperAnnotation::PreviewAnnotation::boundingRect() const
@@ -816,6 +810,60 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
     }
 }
 
+void PaperAnnotation::PreviewAnnotation::resetpos1()
+{
+    if(textlength>textperline*linenum)
+    {
+        practicalText = QString("%1%2").arg(annotation->contents().mid(0, textperline*linenum-4), "......");
+    }
+    else
+    {
+        practicalText = annotation->contents();
+    }
+
+    isLeft = annotation->boundary().x()>0.5?false:true;
+
+    if(isLeft)
+    {
+        if(textlength>textperline*linenum)
+        {
+            startPoint = QPointF(annotation->boundary().x()*width*this->scale, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
+                                       (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)+index*height*scale);
+            setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
+        }
+        else
+        {
+            int pract_linenum = (int)(annotation->contents().length()/textperline);
+            startPoint = QPointF(annotation->boundary().x()*width*this->scale, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
+                                       (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)+index*height*scale);
+            setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());
+        }
+    }
+    else
+    {
+        if(textlength>textperline*linenum)
+        {
+            startPoint = QPointF(annotation->boundary().x()*width*this->scale, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
+                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)+ index*height*scale);
+            setPos(startPoint.x(), startPoint.y()-boundingRect().height());
+        }
+        else
+        {
+            int pract_linenum = (int)(annotation->contents().length()/textperline)+1;
+            startPoint = QPointF(annotation->boundary().x()*width*this->scale, annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
+                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)+ index*height*scale);
+            setPos(startPoint.x(), startPoint.y()-boundingRect().height());
+        }
+    }
+
+
+    setFlag(QGraphicsItem::ItemIsMovable, false);
+}
+
 void PaperAnnotation::PreviewAnnotation::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     isSelected = true;
@@ -826,4 +874,24 @@ void PaperAnnotation::PreviewAnnotation::hoverLeaveEvent(QGraphicsSceneHoverEven
 {
     isSelected = false;
     update();
+}
+
+Poppler::Annotation *PaperAnnotation::PreviewAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
+Poppler::Annotation *PaperAnnotation::HighlightAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
+Poppler::Annotation *PaperAnnotation::LinkedTextAnnotation::return_annotation()
+{
+    return this->annotation;
+}
+
+Poppler::Annotation *PaperAnnotation::LinkAnnotation::return_annotation()
+{
+    return this->annotation;
 }

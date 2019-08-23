@@ -27,6 +27,9 @@ public:
     int index = 0;
     bool isInResizeArea(const QPointF& pos);
     bool m_bIsResizing = false;
+    virtual Poppler::Annotation * return_annotation() = 0;
+    int width, height = 0;
+    void resetpos();
 };
 
 class HighlightAnnotation : public Annotation
@@ -35,14 +38,15 @@ public:
     HighlightAnnotation(Poppler::HighlightAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
     QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    Poppler::Annotation * return_annotation() override;
 
 private:
     Poppler::HighlightAnnotation *annotation;
-    int height, width = 0;
 };
 
 class PopupTextAnnotation : public Annotation
 {
+    Q_OBJECT
 public:
     PopupTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor) {
         this->scale = scalefactor;
@@ -61,13 +65,18 @@ public:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    Poppler::Annotation * return_annotation() override;
 
     Poppler::TextAnnotation *annotation;
-    int height, width = 0;
+
+    void readyForDelete();
 
 private:
     bool isMoving = false;
     void setNewStyle(const QString &text, const QFont &font, const QColor &color);
+
+signals:
+    void deleteSelf();
 };
 
 class FlatTextAnnotation : public Annotation
@@ -93,8 +102,8 @@ public:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
     Poppler::TextAnnotation *annotation;
-    int height, width = 0;
     void readyForDelete();
+    Poppler::Annotation * return_annotation() override;
 
 private:
     bool isMoving = false;
@@ -113,10 +122,10 @@ public:
     }
     QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    Poppler::Annotation * return_annotation() override;
 
 private:
     Poppler::TextAnnotation *annotation;
-    int height, width = 0;
 };
 
 class GeomAnnotation : public Annotation
@@ -143,9 +152,9 @@ public:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
     void setNewStyle(const QColor &color, int width);
     void readyForDelete();
+    Poppler::Annotation * return_annotation() override;
 
     Poppler::GeomAnnotation *annotation;
-    int height, width = 0;
 
 signals:
     void deleteSelf();
@@ -157,10 +166,10 @@ public:
     LinkAnnotation(Poppler::LinkAnnotation *annotation, int width, int height) {this->annotation = annotation; this->width = width; this->height = height;}
     QRectF boundingRect()const override {return QRectF(0, 0, annotation->boundary().width()*width*scale, annotation->boundary().height()*height*scale);}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    Poppler::Annotation * return_annotation() override;
 
 private:
     Poppler::LinkAnnotation *annotation;
-    int height, width = 0;
 };
 
 class InkAnnotation : public Annotation
@@ -183,8 +192,8 @@ public:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
     Poppler::InkAnnotation *annotation;
-    int height, width = 0;
     void setNewStyle(const QColor &color, int width);
+    Poppler::Annotation * return_annotation() override;
 
 private:
     QPointF startPoint;
@@ -193,6 +202,7 @@ private:
 
 class LineAnnotation : public Annotation
 {
+    Q_OBJECT
 public:
     LineAnnotation(int index, Poppler::LineAnnotation *annotation, int width, int height, double scalefactor);
     QPainterPath shape() const override;
@@ -209,12 +219,16 @@ public:
     bool isInResizeArea(const QPointF& pos);
 
     Poppler::LineAnnotation *annotation;
-    int height, width = 0;
     void setNewStyle(const QColor &color, int width);
+    void readyForDelete();
+    Poppler::Annotation * return_annotation() override;
 
 private:
     QPointF startPoint;
     QPointF endPoint;
+
+signals:
+    void deleteSelf();
 };
 
 class PreviewAnnotation : public Annotation
@@ -227,7 +241,6 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     Poppler::TextAnnotation *annotation;
-    int height, width = 0;
     bool isLeft = true;
     bool isZoom = false;
     int textwidthnum = 10;
@@ -239,8 +252,11 @@ public:
     int textperline = 12;
     int textlinespacing = 10;
     int linenum = 4;
+    void resetpos1();
+    int textlength;
 
     void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+    Poppler::Annotation * return_annotation() override;
 };
 }

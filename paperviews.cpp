@@ -84,11 +84,13 @@ void MainScene::loadFile(const QString &addr)
                     // 添加删除接口
                     connect((PaperAnnotation::FlatTextAnnotation *)(annotations.last()), &PaperAnnotation::FlatTextAnnotation::deleteSelf,
                             this, &MainScene::removeCertainItem);
-//                    this->removeItem(tmprectitem);
+                    //                    this->removeItem(tmprectitem);
                 }
                 else {
                     annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
+                    connect((PaperAnnotation::PopupTextAnnotation *)(annotations.last()), &PaperAnnotation::PopupTextAnnotation::deleteSelf,
+                            this, &MainScene::removeCertainItem);
                     annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.last());
                 }
@@ -105,12 +107,16 @@ void MainScene::loadFile(const QString &addr)
                         this, &MainScene::removeCertainItem);
                 break;
             }
-            case 2:
+            case 2:  // LineAnnotation
             {
                 Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(document->document->page(pageidx)->annotations().at(i));
                 annotation->setFlags(Poppler::Annotation::Hidden);
                 annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
+
+                // 添加删除接口
+                connect((PaperAnnotation::LineAnnotation *)(annotations.last()), &PaperAnnotation::LineAnnotation::deleteSelf,
+                        this, &MainScene::removeCertainItem);
 
                 QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
                 startPoint = rwIterator.next();
@@ -278,12 +284,12 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             lineannotation->setLinePoints(points);
             lineannotation->style().setWidth(4);
             document->document->page(index)->addAnnotation(lineannotation);
-            qDebug() << startPoint.x()/scale/width << ((int)startPoint.y())%(int)imageheight/scale/imageheight;
             annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight, scale));
-            qDebug() << annotations.last()->pos().x() << annotations.last()->pos().y() << annotations.last()->boundingRect().width() << annotations.last()->boundingRect().height();
             annotations.at(annotations.length()-1)->scale = scale;
-            qDebug() << scale;
             this->addItem(annotations.at(annotations.length()-1));
+            // 添加删除接口
+            connect((PaperAnnotation::LineAnnotation *)(annotations.last()), &PaperAnnotation::LineAnnotation::deleteSelf,
+                    this, &MainScene::removeCertainItem);
             this->removeItem(tmplineitem);
             break;
         }
@@ -447,7 +453,15 @@ void MainScene::removeCertainItem()
 {
     qDebug() << "成功删除该项目";
     this->removeItem((PaperAnnotation::Annotation *)sender());
-    delete((PaperAnnotation::Annotation *)sender());
+    for(int i=0; i<this->annotations.length();i++)
+    {
+        if(this->annotations.at(i)==sender())
+        {
+            this->annotations.remove(i);
+        }
+    }
+
+    delete (PaperAnnotation::Annotation *)sender();
 }
 
 MainFrame::MainFrame()
@@ -534,13 +548,13 @@ void GraphicsView::updateSize()
     mainscene->document->scale = scalefactor;
     mainscene->scale = scalefactor;
 
-    for(int i=0; i<mainscene->annotations.length();i++)
-    {
-        mainscene->removeItem(mainscene->annotations.at(i));
-        delete mainscene->annotations.at(i);
-    }
-    mainscene->annotations.clear();
-    mainscene->annotations.clear();
+    //    for(int i=0; i<mainscene->annotations.length();i++)
+    //    {
+    //        mainscene->removeItem(mainscene->annotations.at(i));
+    //        delete mainscene->annotations.at(i);
+    //    }
+    //    mainscene->annotations.clear();
+    //    mainscene->annotations.clear();
     mainscene->document->indexes.clear();
 
     mainscene->document->timer->stop();
@@ -583,60 +597,88 @@ void GraphicsView::updateSize()
         }
     }
 
-    for(int pageidx=0; pageidx<mainscene->document->document->numPages(); pageidx++)
+    for(int i=0; i<this->mainscene->annotations.length(); i++)
     {
-        for(int i=0;i<mainscene->document->document->page(pageidx)->annotations().length();i++)
+        this->mainscene->annotations.at(i)->width = mainscene->width/scalefactor;
+        this->mainscene->annotations.at(i)->height = mainscene->height/mainscene->document->document->numPages()/scalefactor;
+        this->mainscene->annotations.at(i)->scale = scalefactor;
+        this->mainscene->annotations.at(i)->resetpos();
+        this->mainscene->annotations.at(i)->update();
+    }
+
+    for(int i=0; i<this->items().length(); i++)
+    {
+        if(QString(typeid(*(this->items().at(i))).name()).contains("Annotation"))
         {
-            switch(mainscene->document->document->page(pageidx)->annotations().at(i)->subType())
+            ((PaperAnnotation::Annotation *)(this->items().at(i)))->width = mainscene->width/scalefactor;
+            ((PaperAnnotation::Annotation *)(this->items().at(i)))->height = mainscene->height/mainscene->document->document->numPages()/scalefactor;
+            ((PaperAnnotation::Annotation *)(this->items().at(i)))->scale = scalefactor;
+            if((QString(typeid(*(this->items().at(i))).name()).contains("Preview")))
             {
-            case 1:  // Text Annotation
+                ((PaperAnnotation::PreviewAnnotation *)(this->items().at(i)))->resetpos1();
+            }
+            else
             {
-                Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
-                if(annotation->textType()==1)
-                {
-                    mainscene->annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, scalefactor));
-                    mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
-                }
-                else {
-                    mainscene->annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
-                    mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
-                    mainscene->annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
-                    mainscene->addItem(mainscene->annotations.last());
-                }
-                break;
+                ((PaperAnnotation::Annotation *)(this->items().at(i)))->resetpos();
             }
-            case 3:  // Geom Annotation
-            {
-                Poppler::GeomAnnotation *annotation = (Poppler::GeomAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
-
-                mainscene->annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
-                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
-                break;
-            }
-            case 2:  // Line Annotation
-            {
-                Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
-
-                mainscene->annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
-                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
-
-                //                QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
-                //                mainscene->startPoint = rwIterator.next();
-                //                rwIterator.toBack();
-                //                mainscene->endPoint = rwIterator.previous();
-                break;
-            }
-            case 6:  // Ink Annotation
-            {
-                Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
-
-                mainscene->annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, scalefactor));
-                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
-                break;
-            }
-            }
+            ((PaperAnnotation::Annotation *)(this->items().at(i)))->update();
         }
     }
+
+    //    for(int pageidx=0; pageidx<mainscene->document->document->numPages(); pageidx++)
+    //    {
+    //        for(int i=0;i<this->mainscene->annotations.length();i++)
+    //        {
+    //            switch(this->mainscene->annotations.at(i)->return_annotation()->subType())
+    //            {
+    //            case 1:  // Text Annotation
+    //            {
+    //                Poppler::TextAnnotation *annotation = (Poppler::TextAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+    //                if(annotation->textType()==1)
+    //                {
+    //                    mainscene->annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, scalefactor));
+    //                    mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+    //                }
+    //                else {
+    //                    mainscene->annotations.append(new PaperAnnotation::PopupTextAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+    //                    mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+    //                    mainscene->annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+    //                    mainscene->addItem(mainscene->annotations.last());
+    //                }
+    //                break;
+    //            }
+    //            case 3:  // Geom Annotation
+    //            {
+    //                Poppler::GeomAnnotation *annotation = (Poppler::GeomAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+
+    //                mainscene->annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+    //                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+    //                break;
+    //            }
+    //            case 2:  // Line Annotation
+    //            {
+    //                Poppler::LineAnnotation *annotation = (Poppler::LineAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+
+    //                mainscene->annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, mainscene->scale));
+    //                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+
+    //                //                QLinkedListIterator<QPointF> rwIterator(annotation->linePoints());
+    //                //                mainscene->startPoint = rwIterator.next();
+    //                //                rwIterator.toBack();
+    //                //                mainscene->endPoint = rwIterator.previous();
+    //                break;
+    //            }
+    //            case 6:  // Ink Annotation
+    //            {
+    //                Poppler::InkAnnotation *annotation = (Poppler::InkAnnotation *)(mainscene->document->document->page(pageidx)->annotations().at(i));
+
+    //                mainscene->annotations.append(new PaperAnnotation::InkAnnotation(pageidx, annotation, mainscene->width/scalefactor, mainscene->height/mainscene->document->document->numPages()/scalefactor, scalefactor));
+    //                mainscene->addItem(mainscene->annotations.at(mainscene->annotations.length()-1));
+    //                break;
+    //            }
+    //            }
+    //        }
+    //    }
 
     connect(this, &GraphicsView::timerStarting, mainscene->document, &AutoDocument::updateImages);
     emit timerStarting();
