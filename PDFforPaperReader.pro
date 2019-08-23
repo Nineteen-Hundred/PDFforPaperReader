@@ -30,6 +30,7 @@ SOURCES += \
     autodocument.cpp \
         main.cpp \
         mainwindow.cpp \
+    pageviewwidget.cpp \
     paperviews.cpp \
     paperannotation.cpp \
     annotationdialog.cpp \
@@ -39,6 +40,7 @@ HEADERS += \
     aboutwindow.h \
     autodocument.h \
         mainwindow.h \
+    pageviewwidget.h \
     paperviews.h \
     paperannotation.h \
     annotationdialog.h \

@@ -6,6 +6,7 @@
 #include <QLayout>
 #include <QLabel>
 #include <QPalette>
+#include <QPushButton>
 
 class AboutWindow : public QDialog
 {

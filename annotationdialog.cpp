@@ -43,7 +43,7 @@ AnnotationDialog::FlatTextDialog::FlatTextDialog(const QString &text, const QFon
 
     attrLayout->addSpacing(20);
 
-    QLabel *colorlabel = new QLabel(tr("Color:"));
+    QLabel *colorlabel = new QLabel(tr("颜色:"));
     colorlabel->setFixedWidth(40);
     attrLayout->addWidget(colorlabel);
 
@@ -51,9 +51,9 @@ AnnotationDialog::FlatTextDialog::FlatTextDialog(const QString &text, const QFon
     attrLayout->addWidget(blocks);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
-    submitBtn = new QPushButton(tr("Ensure"));
-    deleteBtn = new QPushButton(tr("Delete"));
-    cancelBtn = new QPushButton(tr("Cancle"));
+    submitBtn = new QPushButton(tr("确定"));
+    deleteBtn = new QPushButton(tr("删除"));
+    cancelBtn = new QPushButton(tr("取消"));
     submitBtn->setFixedWidth(80);
     deleteBtn->setFixedWidth(80);
     cancelBtn->setFixedWidth(80);
@@ -256,7 +256,7 @@ AnnotationDialog::GeomDialog::GeomDialog(const QColor &color, int linewidth)
 //    }
 //    colorblocks.at(0)->setIsSelected(true);
 
-    QLabel *widthLabel = new QLabel(tr("Width:"));
+    QLabel *widthLabel = new QLabel(tr("宽度:"));
     box = new QComboBox();
     QStringList str;
     for(int i=0; i<8; i++)
@@ -269,7 +269,7 @@ AnnotationDialog::GeomDialog::GeomDialog(const QColor &color, int linewidth)
     widthLayout->addWidget(widthLabel);
     widthLayout->addWidget(box);
 
-    QLabel *colorlabel = new QLabel(tr("Color:"));
+    QLabel *colorlabel = new QLabel(tr("颜色:"));
     colorlabel->setFixedWidth(40);
     attrLayout->addWidget(colorlabel);
 
@@ -277,9 +277,9 @@ AnnotationDialog::GeomDialog::GeomDialog(const QColor &color, int linewidth)
     attrLayout->addWidget(blocks);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
-    submitBtn = new QPushButton(tr("Ensure"));
-    deleteBtn = new QPushButton(tr("Delete"));
-    cancelBtn = new QPushButton(tr("Cancle"));
+    submitBtn = new QPushButton(tr("确认"));
+    deleteBtn = new QPushButton(tr("删除"));
+    cancelBtn = new QPushButton(tr("取消"));
     submitBtn->setFixedWidth(80);
     deleteBtn->setFixedWidth(80);
     cancelBtn->setFixedWidth(80);

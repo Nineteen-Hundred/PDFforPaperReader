@@ -78,6 +78,8 @@ public:
     void updateScene();
     AutoDocument *document;
     void removeCertainItem();
+    void savePDF();
+    const QString filename = "test.pdf";
 
 private:
     //Poppler::Document *document;

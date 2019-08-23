@@ -23,6 +23,7 @@ MainScene::MainScene()
 
 void MainScene::loadFile(const QString &addr)
 {
+//    this->filename = addr;
     document->document = Poppler::Document::load(addr);
     if (!document || document->document->isLocked()) {
         delete document;
@@ -285,7 +286,7 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             lineannotation->setLinePoints(points);
             lineannotation->style().setWidth(4);
-            document->document->page(index)->addAnnotation(lineannotation);
+            //document->document->page(index)->addAnnotation(lineannotation);
             annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight, scale));
             annotations.at(annotations.length()-1)->scale = scale;
             this->addItem(annotations.at(annotations.length()-1));
@@ -307,7 +308,7 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             geomannotation->style().setWidth(4);
-            document->document->page(index)->addAnnotation(geomannotation);
+            //document->document->page(index)->addAnnotation(geomannotation);
             annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
             // 添加删除接口
@@ -417,9 +418,12 @@ void MainScene::newFlatText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    (totallength/hdistance>1?hdistance:totallength)/scale/width,
                                    ((totallength/hdistance+1)*annotation->textFont().pointSize()+20>vdistance?vdistance:(totallength/hdistance+1)*scale*annotation->textFont().pointSize()+20)/scale/imageheight));
-    document->document->page(index)->addAnnotation(annotation);
+    //document->document->page(index)->addAnnotation(annotation);
     annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width/scale, imageheight/scale, scale));
     this->addItem(annotations.at(annotations.length()-1));
+    // 添加删除接口
+    connect((PaperAnnotation::FlatTextAnnotation *)(annotations.last()), &PaperAnnotation::FlatTextAnnotation::deleteSelf,
+            this, &MainScene::removeCertainItem);
 }
 
 void MainScene::newPopupText(const QString &text, QFont font, QColor color)
@@ -436,9 +440,12 @@ void MainScene::newPopupText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    30/scale/width,
                                    30/scale/imageheight));
-    document->document->page(index)->addAnnotation(annotation);
+    //document->document->page(index)->addAnnotation(annotation);
     annotations.append(new PaperAnnotation::PopupTextAnnotation(index, annotation, width, imageheight, scale));
     this->addItem(annotations.at(annotations.length()-1));
+    // 添加删除接口
+    connect((PaperAnnotation::PopupTextAnnotation *)(annotations.last()), &PaperAnnotation::PopupTextAnnotation::deleteSelf,
+            this, &MainScene::removeCertainItem);
 }
 
 void MainScene::updateItem(int index)
@@ -463,7 +470,25 @@ void MainScene::removeCertainItem()
         }
     }
 
-    delete (PaperAnnotation::Annotation *)sender();
+    delete sender();
+}
+
+void MainScene::savePDF()
+{
+    QFile *file = new QFile(this->filename);
+//    if(!file->open(QIODevice::WriteOnly))
+//    {
+//        qDebug() << "open failed";
+//    }
+//    else
+//    {
+        qDebug() << "open successed";
+        this->document->document->pdfConverter()->setOutputFileName("test.pdf");
+        this->document->document->pdfConverter()->setPDFOptions(Poppler::PDFConverter::WithChanges);
+        bool flag = this->document->document->pdfConverter()->convert();
+        int i = document->document->pdfConverter()->lastError();
+        qDebug() << i;
+//    }
 }
 
 MainFrame::MainFrame()
