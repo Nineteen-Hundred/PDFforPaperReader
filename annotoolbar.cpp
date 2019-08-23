@@ -59,4 +59,6 @@ void AnnoToolbar::sendDrawing()
 
 void AnnoToolbar::showAbout()
 {
+    AboutWindow *about = new AboutWindow();
+    about->exec();
 }

@@ -11,5 +11,6 @@
         <file alias="comment">images/zhibiaozhushibiaozhu.png</file>
         <file alias="about">images/iconset0142.png</file>
         <file alias="gaoliang">images/fangxingxuanzhong.png</file>
+        <file alias="logo">images/logo.png</file>
     </qresource>
 </RCC>

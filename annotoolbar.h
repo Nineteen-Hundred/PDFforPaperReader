@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QDialog>
 #include <QMessageBox>
+#include <aboutwindow.h>
 
 class AnnoAction : public QAction
 {

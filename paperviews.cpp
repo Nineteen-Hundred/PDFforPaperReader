@@ -6,6 +6,7 @@
 #define RECTANGLE 3
 #define FLATTEXT 4
 #define POPUPTEXT 5
+#define SPACING 5
 
 MainScene::MainScene()
 {
@@ -17,6 +18,7 @@ MainScene::MainScene()
     xres = mydesk->physicalDpiX();
     yres = mydesk->physicalDpiY();
     connect(document, &AutoDocument::imageCompleted, this, &MainScene::updateScene);
+
 }
 
 void MainScene::loadFile(const QString &addr)
@@ -60,7 +62,7 @@ void MainScene::loadFile(const QString &addr)
         document->images[i] = image;
         QImage *tmptmp = *(&(document->images[0]));
         pages.append(new PaperItem(i, (long)(&(document->images[0]))));
-        pages.at(i)->setPos(0, image->height()*i);
+        pages.at(i)->setPos(0, image->height()*i+SPACING*i);
         addItem(pages.at(i));
     }
 
@@ -490,6 +492,8 @@ SideScene::SideScene()
 GraphicsView::GraphicsView(MainFrame *frame) : QGraphicsView(), frame(frame)
 {
     refreshtimer = new QTimer();
+    this->setStyleSheet("background-color:gray;");
+    this->setWindowFlags(Qt::FramelessWindowHint);
 }
 
 void GraphicsView::setScene(MainScene *scene)
@@ -590,7 +594,7 @@ void GraphicsView::updateSize()
 
     for(int i=0; i<mainscene->document->document->numPages(); i++)
     {
-        mainscene->pages.at(i)->setPos(0, image1->height()*i);
+        mainscene->pages.at(i)->setPos(0, image1->height()*i+SPACING*i);
         if(i!=idx)
         {
             mainscene->document->indexes.append(i);
