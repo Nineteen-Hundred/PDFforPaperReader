@@ -24,6 +24,8 @@
 #include <autodocument.h>
 #include <QThread>
 #include <unistd.h>
+#include <QMessageBox>
+#include <QFileDialog>
 
 class MainFrame;
 
@@ -79,7 +81,9 @@ public:
     AutoDocument *document;
     void removeCertainItem();
     void savePDF();
-    const QString filename = "test.pdf";
+    void savePDFas();
+    QString filename = "";
+    void regenerate_annotations();
 
 private:
     //Poppler::Document *document;
@@ -90,6 +94,8 @@ private:
 signals:
     void is_drawing(bool flag);
     void resizeCompleted();
+    void save_completed();
+    void save_incompleted();
 };
 
 class SideScene : public QGraphicsScene

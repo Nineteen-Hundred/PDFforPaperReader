@@ -23,7 +23,7 @@ MainScene::MainScene()
 
 void MainScene::loadFile(const QString &addr)
 {
-//    this->filename = addr;
+    this->filename = addr;
     document->document = Poppler::Document::load(addr);
     if (!document || document->document->isLocked()) {
         delete document;
@@ -475,20 +475,79 @@ void MainScene::removeCertainItem()
 
 void MainScene::savePDF()
 {
-    QFile *file = new QFile(this->filename);
-//    if(!file->open(QIODevice::WriteOnly))
-//    {
-//        qDebug() << "open failed";
-//    }
-//    else
-//    {
-        qDebug() << "open successed";
-        this->document->document->pdfConverter()->setOutputFileName("test.pdf");
-        this->document->document->pdfConverter()->setPDFOptions(Poppler::PDFConverter::WithChanges);
-        bool flag = this->document->document->pdfConverter()->convert();
-        int i = document->document->pdfConverter()->lastError();
-        qDebug() << i;
-//    }
+    regenerate_annotations();
+
+    QString tmpfilename = "tmp_file.pdf";
+    Poppler::PDFConverter *converter = document->document->pdfConverter();
+    converter->setOutputFileName(tmpfilename);
+    converter->setPDFOptions(Poppler::PDFConverter::WithChanges);
+    bool conv_flag = converter->convert();
+    if(conv_flag)
+    {
+        QFile::remove(this->filename);
+        bool rename_flag = QFile::rename(tmpfilename, this->filename);
+        if(rename_flag)
+        {
+            qDebug() << "完全改成功了";
+        }
+        else
+        {
+
+        }
+    }
+    else
+    {
+    }
+}
+
+void MainScene::savePDFas()
+{
+    QString new_filename = QFileDialog::getSaveFileName(nullptr,
+                                                        tr("请选择保存地址"),
+                                                        "",
+                                                        tr("PDF Files (*.pdf)"));
+    regenerate_annotations();
+
+    QString tmpfilename = "tmp_file.pdf";
+    Poppler::PDFConverter *converter = document->document->pdfConverter();
+    converter->setOutputFileName(tmpfilename);
+    converter->setPDFOptions(Poppler::PDFConverter::WithChanges);
+    bool conv_flag = converter->convert();
+    if(conv_flag)
+    {
+        if(QFile::exists(new_filename))
+        {
+            QFile::remove(new_filename);
+        }
+        bool rename_flag = QFile::rename(tmpfilename, new_filename);
+        if(rename_flag)
+        {
+            qDebug() << "完全改成功了";
+        }
+        else
+        {
+
+        }
+    }
+    else
+    {
+    }
+    this->filename = new_filename;
+}
+
+void MainScene::regenerate_annotations()
+{
+    for(int i=0; i<document->document->numPages(); i++)
+    {
+        for(int j=0; j<document->document->page(i)->annotations().length(); j++)
+        {
+            document->document->page(i)->removeAnnotation(document->document->page(i)->annotations().last());
+        }
+    }
+    for(int i=0; i<this->annotations.length(); i++)
+    {
+        document->document->page(annotations.at(i)->index)->addAnnotation(annotations.at(i)->return_annotation());
+    }
 }
 
 MainFrame::MainFrame()
