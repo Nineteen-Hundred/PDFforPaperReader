@@ -18,7 +18,9 @@ MainScene::MainScene()
     xres = mydesk->physicalDpiX();
     yres = mydesk->physicalDpiY();
     connect(document, &AutoDocument::imageCompleted, this, &MainScene::updateScene);
-
+//    QPrintPreviewDialog print_dialog(&printer, nullptr);
+//    connect(&print_dialog, &QPrintPreviewDialog::paintRequested, this, &MainScene::printPDF);
+//    print_dialog.exec();
 }
 
 void MainScene::loadFile(const QString &addr)
@@ -84,6 +86,9 @@ void MainScene::loadFile(const QString &addr)
                 {
                     annotations.append(new PaperAnnotation::FlatTextAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                     this->addItem(annotations.at(annotations.length()-1));
+                    connect(((PaperAnnotation::FlatTextAnnotation *)(annotations.last())),
+                            &PaperAnnotation::FlatTextAnnotation::posChanged,
+                            this, &MainScene::send_status_changed);
                     // 添加删除接口
                     connect((PaperAnnotation::FlatTextAnnotation *)(annotations.last()), &PaperAnnotation::FlatTextAnnotation::deleteSelf,
                             this, &MainScene::removeCertainItem);
@@ -94,8 +99,8 @@ void MainScene::loadFile(const QString &addr)
                     this->addItem(annotations.at(annotations.length()-1));
                     connect((PaperAnnotation::PopupTextAnnotation *)(annotations.last()), &PaperAnnotation::PopupTextAnnotation::deleteSelf,
                             this, &MainScene::removeCertainItem);
-                    annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
-                    this->addItem(annotations.last());
+                    //annotations.append(new PaperAnnotation::PreviewAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
+                    //this->addItem(annotations.last());
                 }
                 break;
             }
@@ -105,6 +110,9 @@ void MainScene::loadFile(const QString &addr)
                 annotation->setFlags(Poppler::Annotation::Hidden);
                 annotations.append(new PaperAnnotation::GeomAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
+                connect(((PaperAnnotation::GeomAnnotation *)(annotations.last())),
+                        &PaperAnnotation::GeomAnnotation::posChanged,
+                        this, &MainScene::send_status_changed);
                 // 添加删除接口
                 connect((PaperAnnotation::GeomAnnotation *)(annotations.last()), &PaperAnnotation::GeomAnnotation::deleteSelf,
                         this, &MainScene::removeCertainItem);
@@ -116,7 +124,9 @@ void MainScene::loadFile(const QString &addr)
                 annotation->setFlags(Poppler::Annotation::Hidden);
                 annotations.append(new PaperAnnotation::LineAnnotation(pageidx, annotation, width, height/document->document->numPages(), scale));
                 this->addItem(annotations.at(annotations.length()-1));
-
+                connect(((PaperAnnotation::LineAnnotation *)(annotations.last())),
+                        &PaperAnnotation::LineAnnotation::posChanged,
+                        this, &MainScene::send_status_changed);
                 // 添加删除接口
                 connect((PaperAnnotation::LineAnnotation *)(annotations.last()), &PaperAnnotation::LineAnnotation::deleteSelf,
                         this, &MainScene::removeCertainItem);
@@ -286,10 +296,16 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             lineannotation->setLinePoints(points);
             lineannotation->style().setWidth(4);
-            //document->document->page(index)->addAnnotation(lineannotation);
+            document->document->page(index)->addAnnotation(lineannotation);
             annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight, scale));
             annotations.at(annotations.length()-1)->scale = scale;
             this->addItem(annotations.at(annotations.length()-1));
+            emit this->status_changed(true);
+            emit this->draw_completed();
+            changeIsDrawing("circle", false);
+            connect(((PaperAnnotation::LineAnnotation *)(annotations.last())),
+                    &PaperAnnotation::LineAnnotation::posChanged,
+                    this, &MainScene::send_status_changed);
             // 添加删除接口
             connect((PaperAnnotation::LineAnnotation *)(annotations.last()), &PaperAnnotation::LineAnnotation::deleteSelf,
                     this, &MainScene::removeCertainItem);
@@ -308,9 +324,15 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             geomannotation->style().setWidth(4);
-            //document->document->page(index)->addAnnotation(geomannotation);
+            document->document->page(index)->addAnnotation(geomannotation);
             annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
+            emit this->status_changed(true);
+            emit this->draw_completed();
+            changeIsDrawing("circle", false);
+            connect(((PaperAnnotation::GeomAnnotation *)(annotations.last())),
+                    &PaperAnnotation::GeomAnnotation::posChanged,
+                    this, &MainScene::send_status_changed);
             // 添加删除接口
             connect((PaperAnnotation::GeomAnnotation *)(annotations.last()), &PaperAnnotation::GeomAnnotation::deleteSelf,
                     this, &MainScene::removeCertainItem);
@@ -333,6 +355,12 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
             this->addItem(annotations.at(annotations.length()-1));
             annotations.at(annotations.length()-1)->scale = scale;
+            emit this->status_changed(true);
+            emit this->draw_completed();
+            changeIsDrawing("circle", false);
+            connect(((PaperAnnotation::GeomAnnotation *)(annotations.last())),
+                    &PaperAnnotation::GeomAnnotation::posChanged,
+                    this, &MainScene::send_status_changed);
             // 添加删除接口
             connect((PaperAnnotation::GeomAnnotation *)(annotations.last()), &PaperAnnotation::GeomAnnotation::deleteSelf,
                     this, &MainScene::removeCertainItem);
@@ -418,9 +446,15 @@ void MainScene::newFlatText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    (totallength/hdistance>1?hdistance:totallength)/scale/width,
                                    ((totallength/hdistance+1)*annotation->textFont().pointSize()+20>vdistance?vdistance:(totallength/hdistance+1)*scale*annotation->textFont().pointSize()+20)/scale/imageheight));
-    //document->document->page(index)->addAnnotation(annotation);
+    document->document->page(index)->addAnnotation(annotation);
     annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width/scale, imageheight/scale, scale));
     this->addItem(annotations.at(annotations.length()-1));
+    emit this->draw_completed();
+    emit this->status_changed(true);
+    changeIsDrawing("circle", false);
+    connect(((PaperAnnotation::FlatTextAnnotation *)(annotations.last())),
+            &PaperAnnotation::FlatTextAnnotation::posChanged,
+            this, &MainScene::send_status_changed);
     // 添加删除接口
     connect((PaperAnnotation::FlatTextAnnotation *)(annotations.last()), &PaperAnnotation::FlatTextAnnotation::deleteSelf,
             this, &MainScene::removeCertainItem);
@@ -440,9 +474,15 @@ void MainScene::newPopupText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    30/scale/width,
                                    30/scale/imageheight));
-    //document->document->page(index)->addAnnotation(annotation);
+    document->document->page(index)->addAnnotation(annotation);
     annotations.append(new PaperAnnotation::PopupTextAnnotation(index, annotation, width, imageheight, scale));
     this->addItem(annotations.at(annotations.length()-1));
+    emit this->draw_completed();
+    emit this->status_changed(true);
+    changeIsDrawing("circle", false);
+    connect(((PaperAnnotation::PopupTextAnnotation *)(annotations.last())),
+            &PaperAnnotation::PopupTextAnnotation::posChanged,
+            this, &MainScene::send_status_changed);
     // 添加删除接口
     connect((PaperAnnotation::PopupTextAnnotation *)(annotations.last()), &PaperAnnotation::PopupTextAnnotation::deleteSelf,
             this, &MainScene::removeCertainItem);
@@ -470,12 +510,16 @@ void MainScene::removeCertainItem()
         }
     }
 
+    document->document->page(((PaperAnnotation::Annotation *)sender())->index)->removeAnnotation(((PaperAnnotation::Annotation *)sender())->return_annotation());
+
     delete sender();
+
+    emit this->status_changed(true);
 }
 
 void MainScene::savePDF()
 {
-    regenerate_annotations();
+//    regenerate_annotations();
 
     QString tmpfilename = "tmp_file.pdf";
     Poppler::PDFConverter *converter = document->document->pdfConverter();
@@ -488,7 +532,7 @@ void MainScene::savePDF()
         bool rename_flag = QFile::rename(tmpfilename, this->filename);
         if(rename_flag)
         {
-            qDebug() << "完全改成功了";
+            emit this->status_changed(false);
         }
         else
         {
@@ -506,6 +550,8 @@ void MainScene::savePDFas()
                                                         tr("请选择保存地址"),
                                                         "",
                                                         tr("PDF Files (*.pdf)"));
+    this->filename = new_filename;
+
     regenerate_annotations();
 
     QString tmpfilename = "tmp_file.pdf";
@@ -522,7 +568,7 @@ void MainScene::savePDFas()
         bool rename_flag = QFile::rename(tmpfilename, new_filename);
         if(rename_flag)
         {
-            qDebug() << "完全改成功了";
+            emit this->status_changed(false);
         }
         else
         {
@@ -532,21 +578,63 @@ void MainScene::savePDFas()
     else
     {
     }
-    this->filename = new_filename;
 }
 
 void MainScene::regenerate_annotations()
 {
-    for(int i=0; i<document->document->numPages(); i++)
-    {
-        for(int j=0; j<document->document->page(i)->annotations().length(); j++)
-        {
-            document->document->page(i)->removeAnnotation(document->document->page(i)->annotations().last());
-        }
-    }
     for(int i=0; i<this->annotations.length(); i++)
     {
         document->document->page(annotations.at(i)->index)->addAnnotation(annotations.at(i)->return_annotation());
+    }
+    for(int i=0; i<document->document->numPages(); i++)
+    {
+
+    }
+}
+
+void MainScene::send_status_changed()
+{
+    emit this->status_changed(true);
+}
+
+void MainScene::printPDF()
+{
+    if(this->modified_status)
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(nullptr, tr("提示"), tr("您的文档尚未保存，是否保存？"),
+                                      QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
+
+        if(reply==QMessageBox::Yes)  // 文件保存，继续打开
+        {
+        }
+        else if(reply==QMessageBox::No)  // 文件未保存，继续打开
+        {
+            return;
+        }
+        else  // 操作取消
+        {
+            return;
+        }
+    }
+
+    QDesktopWidget *mydesk = QApplication::desktop();
+    int new_xres = mydesk->physicalDpiX();
+    int new_yres = mydesk->physicalDpiY();
+
+    QProgressDialog *progressDlg=new QProgressDialog(nullptr);
+    progressDlg->setWindowModality(Qt::WindowModal);
+    progressDlg->setMinimumDuration(5);
+    progressDlg->setWindowTitle(tr("打印进度"));
+    progressDlg->setLabelText(tr("正在打印"));
+    progressDlg->setCancelButtonText(tr("取消"));
+    progressDlg->setRange(0,document->document->numPages());
+    for(int i=0;i<document->document->numPages();i++)
+    {
+        QImage *image = new QImage(document->document->page(i)->renderToImage(new_xres, new_yres, -1, -1, -1, -1));
+        progressDlg->setValue(i+1);
+        if(progressDlg->wasCanceled())
+            return;
     }
 }
 

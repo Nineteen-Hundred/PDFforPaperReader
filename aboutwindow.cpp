@@ -49,7 +49,7 @@ AboutWindow::AboutWindow()
 
     connect(close_btn, &QPushButton::clicked, this, &QDialog::close);
 
-    this->setFixedWidth(430);
+    this->setFixedWidth(410);
     this->setWindowTitle(tr("关于"));
     this->setLayout(layout);
 }

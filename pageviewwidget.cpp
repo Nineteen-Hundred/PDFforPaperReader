@@ -15,7 +15,7 @@ PageViewWidget::PageViewWidget(QString filename, QWidget *parent) : QWidget(pare
     totalSpliter = new QSplitter(Qt::Horizontal);
     leftSpliter->setFixedWidth(20);
     rightSpliter->setFixedWidth(20);
-    MainFrame *mainframe = new MainFrame();
+    mainframe = new MainFrame();
     mainframe->view()->setScene(mainscene);
     centerSpliter->addWidget(mainframe);
     totalSpliter->addWidget(leftSpliter);
@@ -23,9 +23,13 @@ PageViewWidget::PageViewWidget(QString filename, QWidget *parent) : QWidget(pare
     totalSpliter->addWidget(rightSpliter);
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(totalSpliter);
+    this->filename = filename;
     this->setLayout(layout);
+}
 
-    mainscene->loadFile(filename);
-
+void PageViewWidget::loadNewPDF()
+{
+    mainscene->loadFile(this->filename);
     connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view(), &GraphicsView::updateSize);
+    emit file_loaded(this->filename);
 }

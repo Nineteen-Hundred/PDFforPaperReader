@@ -77,6 +77,7 @@ private:
 
 signals:
     void deleteSelf();
+    void posChanged();
 };
 
 class FlatTextAnnotation : public Annotation
@@ -111,6 +112,7 @@ private:
 
 signals:
     void deleteSelf();
+    void posChanged();
 };
 
 class LinkedTextAnnotation : public Annotation
@@ -158,6 +160,7 @@ public:
 
 signals:
     void deleteSelf();
+    void posChanged();
 };
 
 class LinkAnnotation : public Annotation
@@ -229,6 +232,7 @@ private:
 
 signals:
     void deleteSelf();
+    void posChanged();
 };
 
 class PreviewAnnotation : public Annotation

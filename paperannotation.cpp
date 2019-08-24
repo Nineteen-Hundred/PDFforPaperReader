@@ -97,6 +97,7 @@ void PaperAnnotation::FlatTextAnnotation::mouseReleaseEvent(QGraphicsSceneMouseE
         annotation->setBoundary(boundary);
         QGraphicsItem::mouseReleaseEvent(event);
     }
+    emit this->posChanged();
 }
 
 void PaperAnnotation::FlatTextAnnotation::readyForDelete()
@@ -268,6 +269,8 @@ void PaperAnnotation::GeomAnnotation::mouseReleaseEvent(QGraphicsSceneMouseEvent
         annotation->setBoundary(boundary);
         QGraphicsItem::mouseReleaseEvent(event);
     }
+
+    emit this->posChanged();
 }
 
 void PaperAnnotation::GeomAnnotation::setNewStyle(const QColor &color, int width)
@@ -473,6 +476,7 @@ void PaperAnnotation::LineAnnotation::mouseReleaseEvent(QGraphicsSceneMouseEvent
         annotation->setBoundary(boundary);
         QGraphicsItem::mouseReleaseEvent(event);
     }
+    emit this->posChanged();
 }
 
 bool PaperAnnotation::LineAnnotation::isInResizeArea(const QPointF &pos)
@@ -591,8 +595,8 @@ void PaperAnnotation::PopupTextAnnotation::mouseReleaseEvent(QGraphicsSceneMouse
         QRectF boundary = QRectF(pos().x()/scale/width, (pos().y()-index*scale*height)/scale/height, annotation->boundary().width(), annotation->boundary().height());
         annotation->setBoundary(boundary);
         QGraphicsItem::mouseReleaseEvent(event);
-        QGraphicsItem::mouseReleaseEvent(event);
     }
+    emit this->posChanged();
 }
 
 Poppler::Annotation *PaperAnnotation::PopupTextAnnotation::return_annotation()

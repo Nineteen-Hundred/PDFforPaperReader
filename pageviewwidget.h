@@ -19,8 +19,13 @@ public:
     SideScene *leftscene, *rightscene;
     QThread *scenethread;
     void setPaperTitle();
+    void loadNewPDF();
+    MainFrame *mainframe;
+    QString filename;
+    bool modified_status = false;
 
 signals:
+    void file_loaded(QString filename);
 
 public slots:
 };

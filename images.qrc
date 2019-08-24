@@ -13,5 +13,7 @@
         <file alias="gaoliang">images/fangxingxuanzhong.png</file>
         <file alias="logo">images/logo.png</file>
         <file alias="popup">images/popup.png</file>
+        <file alias="shoucang">images/shoucangjia.png</file>
+        <file alias="print">images/dayin.png</file>
     </qresource>
 </RCC>

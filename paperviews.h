@@ -26,6 +26,9 @@
 #include <unistd.h>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintPreviewDialog>
+#include <QProgressDialog>
 
 class MainFrame;
 
@@ -84,6 +87,10 @@ public:
     void savePDFas();
     QString filename = "";
     void regenerate_annotations();
+    bool modified_status = false;
+    void send_status_changed();
+    void printPDF();
+    QPrinter printer;
 
 private:
     //Poppler::Document *document;
@@ -96,6 +103,9 @@ signals:
     void resizeCompleted();
     void save_completed();
     void save_incompleted();
+    void status_changed(bool status);
+    void draw_completed();
+    void setPrintValue(int value);
 };
 
 class SideScene : public QGraphicsScene
