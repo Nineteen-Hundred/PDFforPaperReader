@@ -10,6 +10,7 @@ AnnoToolbar::AnnoToolbar()
     addAction(saving_as_action);
     print_action = new QAction(QIcon(":/image/print"), tr("打印"), this);
     addAction(print_action);
+    print_action->setCheckable(false);
 
     addSeparator();
 

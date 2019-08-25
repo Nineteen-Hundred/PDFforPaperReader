@@ -29,6 +29,8 @@
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintPreviewDialog>
 #include <QProgressDialog>
+#include <QtPrintSupport/QPageSetupDialog>
+#include <QtPrintSupport/QPrintDialog>
 
 class MainFrame;
 

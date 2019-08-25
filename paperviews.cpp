@@ -18,9 +18,9 @@ MainScene::MainScene()
     xres = mydesk->physicalDpiX();
     yres = mydesk->physicalDpiY();
     connect(document, &AutoDocument::imageCompleted, this, &MainScene::updateScene);
-//    QPrintPreviewDialog print_dialog(&printer, nullptr);
-//    connect(&print_dialog, &QPrintPreviewDialog::paintRequested, this, &MainScene::printPDF);
-//    print_dialog.exec();
+    //    QPrintPreviewDialog print_dialog(&printer, nullptr);
+    //    connect(&print_dialog, &QPrintPreviewDialog::paintRequested, this, &MainScene::printPDF);
+    //    print_dialog.exec();
 }
 
 void MainScene::loadFile(const QString &addr)
@@ -519,7 +519,7 @@ void MainScene::removeCertainItem()
 
 void MainScene::savePDF()
 {
-//    regenerate_annotations();
+    //    regenerate_annotations();
 
     QString tmpfilename = "tmp_file.pdf";
     Poppler::PDFConverter *converter = document->document->pdfConverter();
@@ -607,6 +607,7 @@ void MainScene::printPDF()
 
         if(reply==QMessageBox::Yes)  // 文件保存，继续打开
         {
+            emit this->status_changed(false);
         }
         else if(reply==QMessageBox::No)  // 文件未保存，继续打开
         {
@@ -622,19 +623,58 @@ void MainScene::printPDF()
     int new_xres = mydesk->physicalDpiX();
     int new_yres = mydesk->physicalDpiY();
 
-    QProgressDialog *progressDlg=new QProgressDialog(nullptr);
-    progressDlg->setWindowModality(Qt::WindowModal);
-    progressDlg->setMinimumDuration(5);
-    progressDlg->setWindowTitle(tr("打印进度"));
-    progressDlg->setLabelText(tr("正在打印"));
-    progressDlg->setCancelButtonText(tr("取消"));
-    progressDlg->setRange(0,document->document->numPages());
-    for(int i=0;i<document->document->numPages();i++)
-    {
-        QImage *image = new QImage(document->document->page(i)->renderToImage(new_xres, new_yres, -1, -1, -1, -1));
-        progressDlg->setValue(i+1);
-        if(progressDlg->wasCanceled())
-            return;
+    QPrinter printer;
+    QPrintDialog printDialog(&printer, nullptr);
+    if (printDialog.exec()) {
+
+        QProgressDialog *progressDlg=new QProgressDialog(nullptr);
+        progressDlg->setWindowModality(Qt::WindowModal);
+        progressDlg->setMinimumDuration(5);
+        progressDlg->setWindowTitle(tr("打印进度"));
+        progressDlg->setLabelText(tr("正在打印"));
+        progressDlg->setCancelButtonText(tr("取消"));
+
+        QPainter painter(&printer);
+
+        int startPage, endPage;
+        if(printer.printRange()==QPrinter::AllPages)
+        {
+            startPage = 0;
+            endPage = document->document->numPages();
+        }
+        else if(printer.printRange()==QPrinter::PageRange)
+        {
+            startPage = printer.fromPage();
+            endPage = printer.toPage()>=document->document->numPages()?
+                        document->document->numPages():
+                        printer.toPage()+1;
+        }
+        else
+        {
+            startPage = 0;
+            endPage = document->document->numPages();
+        }
+
+        progressDlg->setRange(0, printer.copyCount()*(endPage-startPage));
+        progressDlg->setValue(1);
+
+        for(int idx=0; idx<printer.copyCount(); idx++)
+        {
+            for(int i=startPage;i<endPage;i++)
+            {
+                QImage *image = new QImage(document->document->page(i)->renderToImage(new_xres, new_yres, -1, -1, -1, -1));
+                painter.drawImage(0, 0, *image);
+                if(idx!=printer.copyCount()-1 || i!=(endPage-startPage-1))
+                {
+                    printer.newPage();
+                }
+                progressDlg->setValue(idx*(endPage-startPage)+i-startPage);
+                if(progressDlg->wasCanceled())
+                    return;
+            }
+        }
+        progressDlg->close();
+        painter.end();
     }
 }
 
