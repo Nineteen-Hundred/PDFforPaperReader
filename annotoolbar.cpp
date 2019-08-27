@@ -33,8 +33,8 @@ AnnoToolbar::AnnoToolbar()
     preview_action->setCheckable(true);
     addAction(preview_action);
 
-    preview_action = new QAction(QIcon(":/image/shoucang"), tr("收藏夹"), this);
-    addAction(preview_action);
+    files_action = new QAction(QIcon(":/image/shoucang"), tr("收藏夹"), this);
+    addAction(files_action);
 
     about_action = new QAction(QIcon(":/image/about"), tr("关于"), this);
     addAction(about_action);

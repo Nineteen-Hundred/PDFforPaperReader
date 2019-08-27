@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QGraphicsSceneHoverEvent>
 #include <qmath.h>
+#include <QFontMetrics>
 
 namespace PaperAnnotation {
 class Annotation : public QGraphicsItem, public QObject

@@ -31,6 +31,7 @@
 #include <QProgressDialog>
 #include <QtPrintSupport/QPageSetupDialog>
 #include <QtPrintSupport/QPrintDialog>
+#include <QGraphicsDropShadowEffect>
 
 class MainFrame;
 
@@ -93,6 +94,8 @@ public:
     void send_status_changed();
     void printPDF();
     QPrinter printer;
+    bool isInPreview = false;
+    void changePreview();
 
 private:
     //Poppler::Document *document;

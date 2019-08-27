@@ -23,7 +23,7 @@ class AnnoToolbar : public QToolBar
 public:
     AnnoToolbar();
     //QAction *actions[8];
-    QAction *saving_action, *saving_as_action, *open_action, *preview_action, *about_action, *print_action;
+    QAction *saving_action, *saving_as_action, *open_action, *preview_action, *files_action, *about_action, *print_action;
     QList<QAction *> group;
     void sendDrawing();
     void sendSaving();

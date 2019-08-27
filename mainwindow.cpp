@@ -64,6 +64,7 @@ void MainWindow::loadPageView(QString filename)
     connect(toolbar->print_action, &QAction::triggered, pageviewwidget->mainscene, &MainScene::printPDF);
     connect(pageviewwidget, &PageViewWidget::file_loaded, this, &MainWindow::setWindowTitle);
     connect(pageviewwidget->mainscene, &MainScene::status_changed, this, &MainWindow::setModiefiedTitle);
+    connect(toolbar->preview_action, &QAction::triggered, pageviewwidget->mainscene, &MainScene::changePreview);
 
     pageviewwidget->loadNewPDF();
 }
@@ -104,6 +105,13 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             {
                 pageviewwidget->mainscene->savePDF();
             }
+        }
+    }
+    else if(Qt::ControlModifier && event->key()==Qt::Key_P)
+    {
+        if(pageviewwidget!=nullptr)
+        {
+            pageviewwidget->mainscene->printPDF();
         }
     }
 }
