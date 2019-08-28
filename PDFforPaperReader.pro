@@ -29,6 +29,11 @@ CONFIG += c++11
 SOURCES += \
     aboutwindow.cpp \
     autodocument.cpp \
+    fileconfigure.cpp \
+    fileimagebuffer.cpp \
+    filelist.cpp \
+    filethumlabel.cpp \
+    filewindow.cpp \
         main.cpp \
         mainwindow.cpp \
     pageviewwidget.cpp \
@@ -40,6 +45,11 @@ SOURCES += \
 HEADERS += \
     aboutwindow.h \
     autodocument.h \
+    fileconfigure.h \
+    fileimagebuffer.h \
+    filelist.h \
+    filethumlabel.h \
+    filewindow.h \
         mainwindow.h \
     pageviewwidget.h \
     paperviews.h \
@@ -59,4 +69,13 @@ unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += poppler-qt5
 
 RESOURCES += \
+    filesys.qrc \
     images.qrc
+
+DISTFILES += \
+    add_collection.png \
+    config.json \
+    dir.png \
+    pdf.png \
+    pdf_filesystem.pro.user \
+    return.png

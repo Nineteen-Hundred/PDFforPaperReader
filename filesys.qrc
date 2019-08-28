@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>pdf.png</file>
+        <file>dir.png</file>
+        <file>config.json</file>
+        <file>return.png</file>
+        <file>add_collection.png</file>
+    </qresource>
+</RCC>

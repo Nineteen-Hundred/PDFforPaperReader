@@ -886,7 +886,7 @@ void PaperAnnotation::PreviewAnnotation::resetpos1()
             startPoint = QPointF(annotation->boundary().x()*width*this->scale,
                                  annotation->boundary().y()*scale*height + index*height*scale);
             endPoint = QPointF(0,
-                               ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)* q>0)?
+                               ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)* linenum>0)?
                                     (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)
                                +index*height*scale);
             setPos(startPoint.x()-boundingRect().width(), startPoint.y()-boundingRect().height());

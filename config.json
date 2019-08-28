@@ -1,0 +1,7 @@
+{
+    "image_cache_dir": "./cache/",
+    "search_path": [
+        "~/Documents",
+        "~/Pictures"
+    ]
+}

@@ -5,6 +5,7 @@
 #include <pageviewwidget.h>
 #include <annotoolbar.h>
 #include <QMessageBox>
+#include <filewindow.h>
 
 namespace Ui {
 class MainWindow;
@@ -20,8 +21,10 @@ public:
     void loadPageView(QString filename);
     AnnoToolbar *toolbar;
     void setModiefiedTitle(bool status);
-    PageViewWidget *pageviewwidget;
+    PageViewWidget *pageviewwidget = nullptr;
     void openNewPDF();
+    FileWindow *m_FileWindow = nullptr;
+    void return_to_front();
 
 private:
     Ui::MainWindow *ui;
@@ -29,6 +32,7 @@ private:
 protected:
     void keyPressEvent(QKeyEvent * event);
     void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
 };
 
 #endif // MAINWINDOW_H

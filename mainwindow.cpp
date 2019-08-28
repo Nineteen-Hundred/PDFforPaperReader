@@ -9,7 +9,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     removeToolBar(ui->mainToolBar);
 
-    loadPageView("/home/pysong/下载/test.pdf");
+    m_FileWindow = new FileWindow(this);
+    //this->setCentralWidget(m_FileWindow);
+
+    this->setWindowTitle(tr("Bamboo多功能PDF阅读器"));
+
+    connect(this->m_FileWindow->m_file_list, &FileList::sendFileName, this, &MainWindow::loadPageView);
+
+//    loadPageView("/home/pysong/下载/test.pdf");
 }
 
 MainWindow::~MainWindow()
@@ -52,6 +59,7 @@ void MainWindow::loadPageView(QString filename)
         addToolBar(toolbar);
 
         connect(toolbar->open_action, &QAction::triggered, this, &MainWindow::openNewPDF);
+        connect(toolbar->files_action, &QAction::triggered, this, &MainWindow::return_to_front);
     }
 
     pageviewwidget = new PageViewWidget(filename);
@@ -93,6 +101,37 @@ void MainWindow::openNewPDF()
     {
         loadPageView(open_filename);
     }
+}
+
+void MainWindow::return_to_front()
+{
+    if(pageviewwidget!=nullptr)
+    {
+        if(pageviewwidget->modified_status)
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, tr("提示"), tr("您的文档尚未保存，是否保存？"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
+
+            if(reply==QMessageBox::Yes)  // 文件保存，继续打开
+            {
+                pageviewwidget->mainscene->savePDF();
+            }
+            else if(reply==QMessageBox::No)  // 文件未保存，继续打开
+            {
+            }
+            else  // 操作取消
+            {
+                return;
+            }
+        }
+
+        removeToolBar(toolbar);
+        pageviewwidget->close();
+        delete pageviewwidget;
+        pageviewwidget = nullptr;
+    }
+
+    //this->setCentralWidget(m_FileWindow);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -142,4 +181,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
             MainWindow::closeEvent(event);
         }
     }
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    if(this->m_FileWindow != nullptr) this->m_FileWindow->mresize(this->size());
 }
