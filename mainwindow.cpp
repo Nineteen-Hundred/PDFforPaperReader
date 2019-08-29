@@ -26,6 +26,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadPageView(QString filename)
 {
+    m_FileWindow->hide();
     if(pageviewwidget!=nullptr)
     {
         if(pageviewwidget->modified_status)
@@ -131,6 +132,7 @@ void MainWindow::return_to_front()
         pageviewwidget = nullptr;
     }
 
+    m_FileWindow->show();
     //this->setCentralWidget(m_FileWindow);
 }
 
