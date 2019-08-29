@@ -14,7 +14,9 @@ FileList::FileList(QWidget *parent) : QWidget(parent)
 int FileList::into_dir(QString path)
 {
     if(path == "default") {
-        path = this->m_content_stack.pop();
+        if(!this->m_content_stack.isEmpty()) {
+            path = this->m_content_stack.pop();
+        }
     } else {
         this->m_content_stack.push(this->m_now_path);
     }
