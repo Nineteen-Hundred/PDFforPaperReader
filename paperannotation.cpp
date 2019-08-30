@@ -1,5 +1,6 @@
-﻿#include <paperannotation.h>
+﻿#define PAGE_SPACING 5
 
+#include <paperannotation.h>
 
 void PaperAnnotation::FlatTextAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
@@ -115,6 +116,7 @@ void PaperAnnotation::FlatTextAnnotation::setNewStyle(const QString &text, const
     annotation->setContents(text);
     annotation->setTextFont(font);
     annotation->setTextColor(color);
+    emit this->posChanged();
 }
 
 PaperAnnotation::Annotation::Annotation() {
@@ -279,6 +281,7 @@ void PaperAnnotation::GeomAnnotation::setNewStyle(const QColor &color, int width
     style.setColor(color);
     style.setWidth(width);
     annotation->setStyle(style);
+    emit this->posChanged();
 }
 
 void PaperAnnotation::GeomAnnotation::readyForDelete()
@@ -301,7 +304,7 @@ PaperAnnotation::LineAnnotation::LineAnnotation(int index, Poppler::LineAnnotati
     startPoint = rwIterator.next();
     rwIterator.toBack();
     endPoint = rwIterator.previous();
-    setPos(annotation->boundary().x()*scale*width, annotation->boundary().y()*scale*height +index*height*scale);
+    setPos(annotation->boundary().x()*scale*width, annotation->boundary().y()*scale*height +index*height*scale + PAGE_SPACING * index);
 }
 
 QPainterPath PaperAnnotation::LineAnnotation::shape() const
@@ -490,6 +493,7 @@ void PaperAnnotation::LineAnnotation::setNewStyle(const QColor &color, int width
     style.setColor(color);
     style.setWidth(width);
     annotation->setStyle(style);
+    emit this->posChanged();
 }
 
 void PaperAnnotation::LineAnnotation::readyForDelete()
@@ -613,6 +617,7 @@ void PaperAnnotation::PopupTextAnnotation::setNewStyle(const QString &text, cons
 {
     annotation->setContents(text);
     annotation->setTextColor(color);
+    emit this->posChanged();
 }
 
 void PaperAnnotation::InkAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -715,13 +720,18 @@ Poppler::Annotation *PaperAnnotation::InkAnnotation::return_annotation()
 PaperAnnotation::PreviewAnnotation::PreviewAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor)
 {
     this->textlength = annotation->contents().length();
+
     for(int i=0; i<annotation->contents().length(); i++)
     {
-        if(annotation->contents().at(i).toLatin1()>0)
+        if(!(annotation->contents().at(i).toLatin1()>0))
         {
             textlength++;
         }
     }
+
+    qDebug() << textlength << textperline << textpointsize;
+    practical_linenum = textlength / 2 / textperline + 1;
+
     this->width = width;
     this->height = height;
     this->scale = scalefactor;
@@ -729,6 +739,14 @@ PaperAnnotation::PreviewAnnotation::PreviewAnnotation(int index, Poppler::TextAn
     this->annotation = annotation;
 
     this->resetpos1();
+
+    shadow_effect = new QGraphicsDropShadowEffect;
+    no_shadow_effect = new QGraphicsDropShadowEffect;
+    no_shadow_effect->setOffset(4, 4);
+    shadow_effect->setColor(Qt::white);
+    no_shadow_effect->setBlurRadius(10);
+    this->setGraphicsEffect(no_shadow_effect);
+//    this->setGraphicsEffect(shadow_effect);
 }
 
 QRectF PaperAnnotation::PreviewAnnotation::boundingRect() const
@@ -739,13 +757,13 @@ QRectF PaperAnnotation::PreviewAnnotation::boundingRect() const
         {
             return QRectF(0, 0,
                           (textpointsize*textperline+annotation->boundary().x()*width)+8,
-                          ((textpointsize+textlinespacing)*linenum));
+                          ((textpointsize+textlinespacing)*practical_linenum));
         }
         else
         {
             return QRectF(0, 0,
                           (textpointsize*textperline+(1-annotation->boundary().x())*width)+8,
-                          ((textpointsize+textlinespacing)*linenum));
+                          ((textpointsize+textlinespacing)*practical_linenum));
         }
     }
     else
@@ -754,13 +772,13 @@ QRectF PaperAnnotation::PreviewAnnotation::boundingRect() const
         {
             return QRectF(0, 0,
                           (textpointsize*textperline+annotation->boundary().x()*width)+8,
-                          ((textpointsize+textlinespacing)*linenum));
+                          ((textpointsize+textlinespacing)*(practical_linenum>linenum?linenum:practical_linenum)));
         }
         else
         {
             return QRectF(0, 0,
                           (textpointsize*textperline+(1-annotation->boundary().x())*width)+8,
-                          ((textpointsize+textlinespacing)*linenum));
+                          ((textpointsize+textlinespacing)*(practical_linenum>linenum?linenum:practical_linenum)));
         }
     }
 }
@@ -781,9 +799,13 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
                                     startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos()-QPointF(4,4));
             painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
             painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->drawEllipse(startPoint-pos(), 3, 3);
             painter->drawLine(startPoint-pos(), endPoint-pos());
+            painter->setBrush(QBrush(QColor(0xb0, 0x88, 0xff),Qt::SolidPattern));
+            painter->setPen(QPen(QColor(0xb0, 0x88, 0xff), 1, Qt::SolidLine));
             painter->drawRect(rectbox);
-            painter->drawText(textbox, practicalText);
+            painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
+            painter->drawText(textbox, annotation->contents());
             painter->setBrush(QBrush(Qt::black, Qt::SolidPattern));
             painter->drawEllipse(startPoint-pos(), 3, 3);
         }
@@ -796,10 +818,10 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
             painter->drawEllipse(startPoint-pos(), 3, 3);
             painter->drawLine(startPoint-pos(), endPoint-pos());
             painter->setBrush(QBrush(QColor(0xb0, 0x88, 0xff),Qt::SolidPattern));
-            painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
+            painter->setPen(QPen(QColor(0xb0, 0x88, 0xff), 1, Qt::SolidLine));
             painter->drawRect(rectbox);
             painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
-            painter->drawText(textbox, practicalText);
+            painter->drawText(textbox, annotation->contents());
             painter->setBrush(QBrush(Qt::black, Qt::SolidPattern));
             painter->drawEllipse(startPoint-pos(), 3, 3);
         }
@@ -815,8 +837,11 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
                                     startPoint-QPointF(annotation->boundary().x()*width*scale,0)-pos()-QPointF(4,4));
             painter->setPen(QPen(Qt::gray, 2, Qt::SolidLine));
             painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->drawEllipse(startPoint-pos(), 3, 3);
             painter->drawLine(startPoint-pos(), endPoint-pos());
-            painter->setBrush(QBrush(Qt::gray,Qt::SolidPattern));
+            painter->setBrush(QBrush(Qt::white,Qt::SolidPattern));
+            painter->setBrush(QBrush(QColor(0xcc, 0xdd, 0xff),Qt::SolidPattern));
+            painter->setPen(QPen(QColor(0xcc, 0xdd, 0xff), 2, Qt::SolidLine));
             painter->drawRect(rectbox);
             painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
             painter->drawText(textbox, practicalText);
@@ -893,7 +918,7 @@ void PaperAnnotation::PreviewAnnotation::resetpos1()
         }
         else
         {
-            int pract_linenum = (int)(annotation->contents().length()/textperline);
+            int pract_linenum = practical_linenum;;
             startPoint = QPointF(annotation->boundary().x()*width*this->scale,
                                  annotation->boundary().y()*scale*height + index*height*scale);
             endPoint = QPointF(0, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
@@ -906,18 +931,23 @@ void PaperAnnotation::PreviewAnnotation::resetpos1()
     {
         if(textlength>textperline*linenum)
         {
-            startPoint = QPointF(annotation->boundary().x()*width*this->scale, annotation->boundary().y()*scale*height + index*height*scale);
-            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
-                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)
+            startPoint = QPointF(annotation->boundary().x()*width*this->scale,
+                                 annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(width*scale,
+                               ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum>0)?
+                                    (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*linenum):0)
                                +index*height*scale);
             setPos(startPoint.x(), startPoint.y()-boundingRect().height());
         }
         else
         {
-            int pract_linenum = (int)(annotation->contents().length()/textperline)+1;
-            startPoint = QPointF(annotation->boundary().x()*width*this->scale, annotation->boundary().y()*scale*height + index*height*scale);
-            endPoint = QPointF(width*scale, ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
-                                                 (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)
+            int pract_linenum = practical_linenum;
+            qDebug() << practical_linenum;
+            startPoint = QPointF(annotation->boundary().x()*width*this->scale,
+                                 annotation->boundary().y()*scale*height + index*height*scale);
+            endPoint = QPointF(width*scale,
+                               ((annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum>0)?
+                                    (annotation->boundary().y()*scale*height-(textpointsize+textlinespacing)*pract_linenum):0)
                                +index*height*scale);
             setPos(startPoint.x(), startPoint.y()-boundingRect().height());
         }
@@ -930,12 +960,16 @@ void PaperAnnotation::PreviewAnnotation::resetpos1()
 void PaperAnnotation::PreviewAnnotation::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     isSelected = true;
+    emit this->needRefresh();
+    //this->setGraphicsEffect(shadow_effect);
     update();
 }
 
 void PaperAnnotation::PreviewAnnotation::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     isSelected = false;
+    emit this->needRefresh();
+    //this->setGraphicsEffect(no_shadow_effect);
     update();
 }
 

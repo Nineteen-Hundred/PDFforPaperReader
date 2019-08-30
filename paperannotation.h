@@ -1,6 +1,8 @@
 #ifndef PAPERANNOTATION_H
 #define PAPERANNOTATION_H
 
+#define PAGE_SPACING 5
+
 #endif // PAPERANNOTATION_H
 
 #include <QGraphicsItem>
@@ -16,6 +18,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <qmath.h>
 #include <QFontMetrics>
+#include <QGraphicsDropShadowEffect>
 
 namespace PaperAnnotation {
 class Annotation : public QGraphicsItem, public QObject
@@ -49,12 +52,12 @@ class PopupTextAnnotation : public Annotation
 {
     Q_OBJECT
 public:
-    PopupTextAnnotation(int index, Poppler::TextAnnotation *annotation, int width, int height, double scalefactor) {
+    PopupTextAnnotation(int index, Poppler::TextAnnotation *annotation, int widths, int heights, double scalefactor) {
         this->scale = scalefactor;
         this->index = index;
-        this->annotation = annotation; this->width = width; this->height = height;
+        this->annotation = annotation; this->width = widths; this->height = heights;
         setPos(annotation->boundary().x()*width*scale,
-               annotation->boundary().y()*height*scale +index*scale*height);
+               annotation->boundary().y()*height*scale +index*scale*height + PAGE_SPACING*index);
     }
     QRectF boundingRect()const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
@@ -90,7 +93,7 @@ public:
         this->scale = scalefactor;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
-               annotation->boundary().y()*height*scale +index*scale*height);
+               annotation->boundary().y()*height*scale +index*scale*height + PAGE_SPACING*index);
     }
     QRectF boundingRect()const override
     {return QRectF(0, 0, annotation->boundary().width()*width*scale,
@@ -184,7 +187,7 @@ public:
         this->scale = scalefactor;
         this->annotation = annotation; this->width = width; this->height = height;
         setPos(annotation->boundary().x()*width*scale,
-               annotation->boundary().y()*height*scale +index*scale*height);
+               annotation->boundary().y()*height*scale +index*scale*height  + PAGE_SPACING*index);
     }
 
     QRectF boundingRect() const override
@@ -256,12 +259,17 @@ public:
     int textpointsize = 16;
     int textperline = 12;
     int textlinespacing = 10;
+    int practical_linenum = 0;
     int linenum = 4;
     void resetpos1();
     int textlength;
+    QGraphicsDropShadowEffect *shadow_effect=nullptr, *no_shadow_effect=nullptr;
 
     void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
     Poppler::Annotation * return_annotation() override;
+
+signals:
+    void needRefresh();
 };
 }

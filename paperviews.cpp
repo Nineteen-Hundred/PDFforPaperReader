@@ -203,7 +203,6 @@ void MainScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         pen.setColor(QColor(0, 160, 230));
         pen.setWidth(2);
         startPoint = event->scenePos();
-        startPoint = event->scenePos();
         endPoint = event->scenePos();
         switch(shape)
         {
@@ -283,18 +282,19 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         {
         case LINE:
         {
-            int index = (int)(tmplineitem->pos().y()/scale/imageheight);
+            int index = (int)(tmplineitem->pos().y()/imageheight);
             Poppler::LineAnnotation *lineannotation = new Poppler::LineAnnotation(Poppler::LineAnnotation::StraightLine);
-            QRectF boundary = QRectF(tmplineitem->pos().x()/scale/width, (((int)(tmplineitem->pos().y()))%(int)imageheight)/scale/imageheight,
-                                     tmplineitem->boundingRect().width()/scale/width, tmplineitem->boundingRect().height()/scale/imageheight);
+            QRectF boundary = QRectF(tmplineitem->pos().x()/width, (((int)(tmplineitem->pos().y()))%(int)imageheight)/(double)imageheight,
+                                     tmplineitem->boundingRect().width()/width, tmplineitem->boundingRect().height()/imageheight);
             lineannotation->setBoundary(boundary);
             QLinkedList<QPointF> points;
-            points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
-            points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
+            points.append(QPointF(startPoint.x()/width, ((int)startPoint.y())%(int)imageheight/(double)imageheight));
+            points.append(QPointF(endPoint.x()/width, ((int)endPoint.y())%(int)imageheight/(double)imageheight));
             lineannotation->setLinePoints(points);
             lineannotation->style().setWidth(4);
+            lineannotation->setFlags(Poppler::Annotation::Hidden);
             document->document->page(index)->addAnnotation(lineannotation);
-            annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width, imageheight, scale));
+            annotations.append(new PaperAnnotation::LineAnnotation(index, lineannotation, width/scale, imageheight/scale, scale));
             annotations.at(annotations.length()-1)->scale = scale;
             this->addItem(annotations.at(annotations.length()-1));
             emit this->status_changed(true);
@@ -311,18 +311,20 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         }
         case CIRCLE:
         {
-            int index = (int)(tmpellipseitem->pos().y()/scale/imageheight);
+            qDebug() << "scale is" << scale;
+            int index = (int)(tmpellipseitem->pos().y()/imageheight);
             Poppler::GeomAnnotation *geomannotation = new Poppler::GeomAnnotation();
             geomannotation->setGeomType(Poppler::GeomAnnotation::InscribedCircle);
-            QRectF boundary = QRectF(tmpellipseitem->pos().x()/scale/width, (((int)(tmpellipseitem->pos().y()))%(int)imageheight)/scale/imageheight,
-                                     tmpellipseitem->boundingRect().width()/scale/width, tmpellipseitem->boundingRect().height()/scale/imageheight);
+            QRectF boundary = QRectF(tmpellipseitem->pos().x()/width, (((int)(tmpellipseitem->pos().y()))%(int)imageheight)/(double)imageheight,
+                                     tmpellipseitem->boundingRect().width()/width, tmpellipseitem->boundingRect().height()/imageheight);
             geomannotation->setBoundary(boundary);
             QLinkedList<QPointF> points;
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             geomannotation->style().setWidth(4);
+            geomannotation->setFlags(Poppler::Annotation::Hidden);
             document->document->page(index)->addAnnotation(geomannotation);
-            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
+            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width/scale, imageheight/scale, scale));
             this->addItem(annotations.at(annotations.length()-1));
             emit this->status_changed(true);
             emit this->draw_completed();
@@ -338,18 +340,19 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         }
         case RECTANGLE:
         {
-            int index = (int)(tmprectitem->pos().y()/scale/imageheight);
+            int index = (int)(tmprectitem->pos().y()/imageheight);
             Poppler::GeomAnnotation *geomannotation = new Poppler::GeomAnnotation();
             geomannotation->setGeomType(Poppler::GeomAnnotation::InscribedSquare);
-            QRectF boundary = QRectF(tmprectitem->pos().x()/scale/width, (((int)(tmprectitem->pos().y()))%(int)imageheight)/scale/imageheight,
-                                     tmprectitem->boundingRect().width()/scale/width, tmprectitem->boundingRect().height()/scale/imageheight);
+            QRectF boundary = QRectF(tmprectitem->pos().x()/width, (((int)(tmprectitem->pos().y()))%(int)imageheight)/(double)imageheight,
+                                     tmprectitem->boundingRect().width()/width, tmprectitem->boundingRect().height()/imageheight);
             geomannotation->setBoundary(boundary);
             QLinkedList<QPointF> points;
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
             geomannotation->style().setWidth(4);
+            geomannotation->setFlags(Poppler::Annotation::Hidden);
             document->document->page(index)->addAnnotation(geomannotation);
-            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width, imageheight, scale));
+            annotations.append(new PaperAnnotation::GeomAnnotation(index, geomannotation, width/scale, imageheight/scale, scale));
             this->addItem(annotations.at(annotations.length()-1));
             annotations.at(annotations.length()-1)->scale = scale;
             emit this->status_changed(true);
@@ -432,7 +435,7 @@ void MainScene::setCurrentShape(int i)
 void MainScene::newFlatText(const QString &text, QFont font, QColor color)
 {
     int imageheight = height/document->document->numPages();
-    int index = (int)(startPoint.y()/scale/imageheight);
+    int index = (int)(startPoint.y()/imageheight);
     Poppler::TextAnnotation *annotation = new Poppler::TextAnnotation(Poppler::TextAnnotation::InPlace);
     annotation->setTextColor(color);
     annotation->setContents(text);
@@ -443,6 +446,7 @@ void MainScene::newFlatText(const QString &text, QFont font, QColor color)
     annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
                                    (totallength/hdistance>1?hdistance:totallength)/scale/width,
                                    ((totallength/hdistance+1)*annotation->textFont().pointSize()+20>vdistance?vdistance:(totallength/hdistance+1)*scale*annotation->textFont().pointSize()+20)/scale/imageheight));
+    annotation->setFlags(Poppler::Annotation::Hidden);
     document->document->page(index)->addAnnotation(annotation);
     annotations.append(new PaperAnnotation::FlatTextAnnotation(index, annotation, width/scale, imageheight/scale, scale));
     this->addItem(annotations.at(annotations.length()-1));
@@ -460,7 +464,7 @@ void MainScene::newFlatText(const QString &text, QFont font, QColor color)
 void MainScene::newPopupText(const QString &text, QFont font, QColor color)
 {
     int imageheight = height/document->document->numPages();
-    int index = (int)(startPoint.y()/scale/imageheight);
+    int index = (int)(startPoint.y()/imageheight);
     Poppler::TextAnnotation *annotation = new Poppler::TextAnnotation(Poppler::TextAnnotation::Linked);
     annotation->setTextColor(color);
     annotation->setContents(text);
@@ -468,12 +472,13 @@ void MainScene::newPopupText(const QString &text, QFont font, QColor color)
     int totallength = annotation->textFont().pointSize()*annotation->contents().length();
     int hdistance = scale*width-startPoint.x();
     int vdistance = (index+1)*scale*imageheight-startPoint.y();
-    annotation->setBoundary(QRectF(startPoint.x()/scale/width, (((int)(startPoint.y()))%(int)imageheight)/scale/imageheight,
-                                   30/scale/width,
-                                   30/scale/imageheight));
+    annotation->setBoundary(QRectF(startPoint.x()/width, (((int)(startPoint.y()))%(int)imageheight)/(double)imageheight,
+                                   30/(double)width*scale,
+                                   30/(double)imageheight*scale));
     document->document->page(index)->addAnnotation(annotation);
-    annotations.append(new PaperAnnotation::PopupTextAnnotation(index, annotation, width, imageheight, scale));
+    annotations.append(new PaperAnnotation::PopupTextAnnotation(index, annotation, width/scale, imageheight/scale, scale));
     this->addItem(annotations.at(annotations.length()-1));
+    annotation->setFlags(Poppler::Annotation::Hidden);
     emit this->draw_completed();
     emit this->status_changed(true);
     changeIsDrawing("circle", false);
@@ -692,12 +697,9 @@ void MainScene::changePreview()
                                        annotations.at(i)->width,
                                        annotations.at(i)->height,
                                        annotations.at(i)->scale));
-                QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
-                shadow_effect->setOffset(-2, 2);
-                shadow_effect->setColor(Qt::white);
-                shadow_effect->setBlurRadius(10);
-                annotations.last()->setGraphicsEffect(shadow_effect);
                 this->addItem(annotations.last());
+                connect((PaperAnnotation::PreviewAnnotation *)(annotations.last()), &PaperAnnotation::PreviewAnnotation::needRefresh,
+                        this, &MainScene::updateScene);
                 this->removeItem(annotations.at(i));
                 this->annotations.remove(i);
             }
@@ -730,7 +732,7 @@ MainFrame::MainFrame()
     layout->addWidget(graphicsview);
     setLayout(layout);
 
-    //graphicsview->setDragMode(QGraphicsView::ScrollHandDrag);
+    graphicsview->setDragMode(QGraphicsView::ScrollHandDrag);
     graphicsview->setDragMode(QGraphicsView::RubberBandDrag);
     graphicsview->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
     graphicsview->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
@@ -832,6 +834,7 @@ void GraphicsView::updateSize()
     mainscene->document->images[idx] = image1;
 
     mainscene->width = image1->width();
+    qDebug() << "width is" << mainscene->width;
     mainscene->height = image1->height()*mainscene->document->document->numPages();
 
     setSceneRect(-200, 0, mainscene->width+200, mainscene->height);
