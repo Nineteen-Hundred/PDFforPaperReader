@@ -50,6 +50,15 @@ void MainScene::loadFile(const QString &addr)
         }
     }
 
+    QProgressDialog *progressDlg=new QProgressDialog(nullptr);
+    progressDlg->setWindowModality(Qt::WindowModal);
+    progressDlg->setMinimumDuration(5);
+    progressDlg->setWindowTitle(tr("载入进度"));
+    progressDlg->setLabelText(tr("正在加载"));
+    progressDlg->setRange(0, document->document->numPages());
+    QPushButton *button = new QPushButton(tr("取消"));
+    button->setEnabled(false);
+    progressDlg->setCancelButton(button);
 
     for(int i=0; i<document->document->numPages(); i++)
     {
@@ -64,6 +73,7 @@ void MainScene::loadFile(const QString &addr)
         pages.append(new PaperItem(i, (long)(&(document->images[0]))));
         pages.at(i)->setPos(0, image->height()*i+SPACING*i);
         addItem(pages.at(i));
+        progressDlg->setValue(i+1);
     }
 
     setSceneRect(0, 0, width, height);

@@ -32,6 +32,7 @@
 #include <QtPrintSupport/QPageSetupDialog>
 #include <QtPrintSupport/QPrintDialog>
 #include <QGraphicsDropShadowEffect>
+#include <QPushButton>
 
 class MainFrame;
 
