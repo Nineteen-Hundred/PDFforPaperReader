@@ -3,6 +3,7 @@
 AboutWindow::AboutWindow()
 {
     QLabel *logo = new QLabel();
+    logo->setFixedSize(368,110);
     logo->setPixmap(QPixmap::fromImage(QImage(":/image/logo")));
     QLabel *name = new QLabel(tr("Bamboo多功能PDF阅读器"));
     name->setAlignment(Qt::AlignCenter);

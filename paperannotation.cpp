@@ -179,6 +179,8 @@ void PaperAnnotation::GeomAnnotation::paint(QPainter *painter, const QStyleOptio
         painter->setPen(QPen(bgcolor, penWidth, Qt::SolidLine));
         painter->setBrush(Qt::NoBrush);
         painter->drawRect(boundingRect().adjusted(pad, pad, -pad, -pad));
+//        painter->setBrush(Qt::black);
+//        painter->drawRect(boundingRect().right()-8, boundingRect().bottom()-8, 8, 8);
 
         painter->setPen(QPen(option->palette.windowText(), 0, Qt::DashLine));
         painter->setBrush(Qt::NoBrush);
@@ -804,8 +806,8 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawEllipse(startPoint-pos(), 3, 3);
             painter->drawLine(startPoint-pos(), endPoint-pos());
-            painter->setBrush(QBrush(QColor(0xb0, 0x88, 0xff),Qt::SolidPattern));
-            painter->setPen(QPen(QColor(0xb0, 0x88, 0xff), 1, Qt::SolidLine));
+            painter->setBrush(QBrush(QColor(0x77, 0xdd, 0xff),Qt::SolidPattern));
+            painter->setPen(QPen(QColor(0x77, 0xdd, 0xff), 1, Qt::SolidLine));
             painter->drawRect(rectbox);
             painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
             painter->drawText(textbox, annotation->contents());
@@ -820,8 +822,8 @@ void PaperAnnotation::PreviewAnnotation::paint(QPainter *painter, const QStyleOp
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawEllipse(startPoint-pos(), 3, 3);
             painter->drawLine(startPoint-pos(), endPoint-pos());
-            painter->setBrush(QBrush(QColor(0xb0, 0x88, 0xff),Qt::SolidPattern));
-            painter->setPen(QPen(QColor(0xb0, 0x88, 0xff), 1, Qt::SolidLine));
+            painter->setBrush(QBrush(QColor(0x77, 0xdd, 0xff),Qt::SolidPattern));
+            painter->setPen(QPen(QColor(0x77, 0xdd, 0xff), 1, Qt::SolidLine));
             painter->drawRect(rectbox);
             painter->setPen(QPen(Qt::black, 2, Qt::SolidLine));
             painter->drawText(textbox, annotation->contents());
