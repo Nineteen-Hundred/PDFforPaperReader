@@ -784,39 +784,52 @@ void GraphicsView::wheelEvent(QWheelEvent *ev)
 {
     if(ev->modifiers() & Qt::ControlModifier)
     {
-        mainscene->document->indexes.clear();
-        if(!refreshtimer->isActive())
+        if(ev->delta()>0 & scalefactor>2)
         {
-            oldCenterPoint = mapToScene(QPoint(width()/2, height()/2));
-            currentScenePoint = mapToScene(ev->pos());
-            lengthPoint = oldCenterPoint-currentScenePoint;
-            mainscene->currentpage = (int)(currentScenePoint.y()/height()/scalefactor);
+            ev->ignore();
+            return;
         }
-
-        if(ev->delta()>0)
+        else if(ev->delta()<0 & scalefactor<0.5)
         {
-            refreshtimer->stop();
-            point = mapToScene(QPoint(this->x()*1.2+this->width()/2*1.2, this->y()*1.2+this->height()/2*1.2));
-            scale(1.2, 1.2);
-            scalefactor*=1.2;
-            mainscene->scale = scalefactor;
-            centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
-            centerOn(centerPoint);
-            refreshtimer->start(500);
+            ev->ignore();
+            return;
         }
         else
         {
-            refreshtimer->stop();
-            point = mapToScene(QPoint(this->x()/1.2+this->width()/2/1.2, this->y()/1.2+this->height()/2/1.2));
-            scale(1/1.2, 1/1.2);
-            scalefactor*=1/1.2;
-            mainscene->scale = scalefactor;
-            QPointF lengthPoint = oldCenterPoint-currentScenePoint;
-            centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
-            centerOn(centerPoint);
-            refreshtimer->start(500);
+            mainscene->document->indexes.clear();
+            if(!refreshtimer->isActive())
+            {
+                oldCenterPoint = mapToScene(QPoint(width()/2, height()/2));
+                currentScenePoint = mapToScene(ev->pos());
+                lengthPoint = oldCenterPoint-currentScenePoint;
+                mainscene->currentpage = (int)(currentScenePoint.y()/height()/scalefactor);
+            }
+
+            if(ev->delta()>0)
+            {
+                refreshtimer->stop();
+                point = mapToScene(QPoint(this->x()*1.2+this->width()/2*1.2, this->y()*1.2+this->height()/2*1.2));
+                scale(1.2, 1.2);
+                scalefactor*=1.2;
+                mainscene->scale = scalefactor;
+                centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
+                centerOn(centerPoint);
+                refreshtimer->start(500);
+            }
+            else
+            {
+                refreshtimer->stop();
+                point = mapToScene(QPoint(this->x()/1.2+this->width()/2/1.2, this->y()/1.2+this->height()/2/1.2));
+                scale(1/1.2, 1/1.2);
+                scalefactor*=1/1.2;
+                mainscene->scale = scalefactor;
+                QPointF lengthPoint = oldCenterPoint-currentScenePoint;
+                centerPoint = currentScenePoint+lengthPoint/scalefactor*oldscalefactor;
+                centerOn(centerPoint);
+                refreshtimer->start(500);
+            }
+            ev->accept();
         }
-        ev->accept();
     }
     else
     {
@@ -856,7 +869,7 @@ void GraphicsView::updateSize()
     qDebug() << "width is" << mainscene->width;
     mainscene->height = image1->height()*mainscene->document->document->numPages();
 
-    setSceneRect(-200, 0, mainscene->width+200, mainscene->height);
+    setSceneRect(-200, 0, mainscene->width+400, mainscene->height);
 
     update();
     mainscene->update();
