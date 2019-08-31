@@ -34,6 +34,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QPushButton>
 #include <math.h>
+#include <typeinfo>
 
 class MainFrame;
 
