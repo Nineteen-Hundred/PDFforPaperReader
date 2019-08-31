@@ -1,6 +1,5 @@
 {
     "image_cache_dir": "./cache/",
     "search_path": [
-        "/home/pysong/下载"
     ]
 }
