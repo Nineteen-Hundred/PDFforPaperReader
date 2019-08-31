@@ -10,13 +10,19 @@ MainWindow::MainWindow(QWidget *parent) :
     removeToolBar(ui->mainToolBar);
 
     m_FileWindow = new FileWindow(this);
-    //this->setCentralWidget(m_FileWindow);
+//    this->setCentralWidget(m_FileWindow);
 
     this->setWindowTitle(tr("Bamboo多功能PDF阅读器"));
 
-    connect(this->m_FileWindow->m_file_list, &FileList::sendFileName, this, &MainWindow::loadPageView);
+    toolbar = new AnnoToolbar;
+    addToolBar(toolbar);
+    toolbar->initialStatus();
 
-//    loadPageView("/home/pysong/下载/test.pdf");
+    connect(this->m_FileWindow->m_file_list, &FileList::sendFileName, this, &MainWindow::loadPageView);
+    connect(toolbar->open_action, &QAction::triggered, this, &MainWindow::openNewPDF);
+    connect(toolbar->files_action, &QAction::triggered, this, &MainWindow::return_to_front);
+
+    //    loadPageView("/home/pysong/下载/test.pdf");
 }
 
 MainWindow::~MainWindow()
@@ -56,11 +62,7 @@ void MainWindow::loadPageView(QString filename)
     }
     else
     {
-        toolbar = new AnnoToolbar;
-        addToolBar(toolbar);
 
-        connect(toolbar->open_action, &QAction::triggered, this, &MainWindow::openNewPDF);
-        connect(toolbar->files_action, &QAction::triggered, this, &MainWindow::return_to_front);
     }
 
     pageviewwidget = new PageViewWidget(filename);
@@ -75,7 +77,13 @@ void MainWindow::loadPageView(QString filename)
     connect(pageviewwidget->mainscene, &MainScene::status_changed, this, &MainWindow::setModiefiedTitle);
     connect(toolbar->preview_action, &QAction::triggered, pageviewwidget->mainscene, &MainScene::changePreview);
 
-    pageviewwidget->loadNewPDF();
+    if(!(pageviewwidget->loadNewPDF()))
+    {
+        QMessageBox::about(this, tr("提示"), tr("打开PDF时出现错误，可能PDF文件已加密或超出大小！"));
+        return_to_front();
+        return;
+    }
+    toolbar->pdfStatus();
 }
 
 void MainWindow::setModiefiedTitle(bool status)
@@ -126,13 +134,15 @@ void MainWindow::return_to_front()
             }
         }
 
-        removeToolBar(toolbar);
+        //removeToolBar(toolbar);
         pageviewwidget->close();
         delete pageviewwidget;
         pageviewwidget = nullptr;
     }
 
     m_FileWindow->show();
+    this->setWindowTitle(tr("Bamboo多功能PDF阅读器"));
+    toolbar->initialStatus();
     //this->setCentralWidget(m_FileWindow);
 }
 

@@ -82,3 +82,29 @@ void AnnoToolbar::resetStatus()
         group.at(i)->setChecked(false);
     }
 }
+
+void AnnoToolbar::initialStatus()
+{
+    for(int i=0; i<group.count(); i++)
+    {
+        group.at(i)->setEnabled(false);
+    }
+    saving_action->setEnabled(false);
+    saving_as_action->setEnabled(false);
+    print_action->setEnabled(false);
+    preview_action->setEnabled(false);
+    files_action->setEnabled(false);
+}
+
+void AnnoToolbar::pdfStatus()
+{
+    for(int i=0; i<group.count(); i++)
+    {
+        group.at(i)->setEnabled(true);
+    }
+    saving_action->setEnabled(true);
+    saving_as_action->setEnabled(true);
+    print_action->setEnabled(true);
+    preview_action->setEnabled(true);
+    files_action->setEnabled(true);
+}

@@ -6,7 +6,7 @@ FileWindow::FileWindow(QWidget *parent) : QWidget(parent)
     this->m_scorll = new QScrollArea(this); 
     this->m_file_list = new FileList(this->m_scorll);
     this->m_scorll->setWidget(this->m_file_list);
-    
+
     //this->m_scorll->setBackgroundRole(QPalette::Dark);
     connect(this, SIGNAL(changeSizeSignal(QSize)), this->m_file_list, SLOT(sizeChange(QSize)));
 }

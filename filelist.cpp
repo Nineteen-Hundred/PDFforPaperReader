@@ -7,7 +7,7 @@ FileList::FileList(QWidget *parent) : QWidget(parent)
     this->m_layout = new QGridLayout(this);
     //this->m_pdf_list = new QList<FileThumLabel>;
     this->setLayout(m_layout);
-    this->m_layout->setMargin(10);
+    this->m_layout->setMargin(36);
     this->into_dir("default");
 }
 

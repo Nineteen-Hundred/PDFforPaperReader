@@ -19,7 +19,7 @@ public:
     SideScene *leftscene, *rightscene;
     QThread *scenethread;
     void setPaperTitle();
-    void loadNewPDF();
+    bool loadNewPDF();
     MainFrame *mainframe;
     QString filename;
     bool modified_status = false;

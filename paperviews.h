@@ -56,7 +56,7 @@ class MainScene : public QGraphicsScene
     friend class GraphicsView;
 public:
     MainScene();
-    void loadFile(const QString &addr);
+    bool loadFile(const QString &addr);
     void refreshView(qreal scale);
     void drawAnnotations();
     QVector<PaperAnnotation::Annotation *> annotations;

@@ -31,6 +31,8 @@ public:
     void sendOpening();
     void showAbout();
     void resetStatus();
+    void initialStatus();
+    void pdfStatus();
 
 signals:
     void isDrawing(const QString &text, bool is_drawing);

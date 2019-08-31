@@ -27,9 +27,13 @@ PageViewWidget::PageViewWidget(QString filename, QWidget *parent) : QWidget(pare
     this->setLayout(layout);
 }
 
-void PageViewWidget::loadNewPDF()
+bool PageViewWidget::loadNewPDF()
 {
-    mainscene->loadFile(this->filename);
-    connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view(), &GraphicsView::updateSize);
+    if(!(mainscene->loadFile(this->filename)))
+    {
+        return false;
+    }
+    connect(mainframe->view()->refreshtimer, &QTimer::timeout, mainframe->view(), &GraphicsView::updateSize);   
     emit file_loaded(this->filename);
+    return true;
 }

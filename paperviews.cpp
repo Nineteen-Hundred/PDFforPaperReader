@@ -20,13 +20,18 @@ MainScene::MainScene()
     connect(document, &AutoDocument::imageCompleted, this, &MainScene::updateScene);
 }
 
-void MainScene::loadFile(const QString &addr)
+bool MainScene::loadFile(const QString &addr)
 {
     this->filename = addr;
     document->document = Poppler::Document::load(addr);
     if (!document || document->document->isLocked()) {
         delete document;
-        return;
+        return false;
+    }
+
+    if(document->document->numPages()>30)
+    {
+        return false;
     }
 
     for(int i=0; i<document->document->numPages(); i++)
@@ -155,6 +160,8 @@ void MainScene::loadFile(const QString &addr)
             }
         }
     }
+
+    return true;
 }
 
 void MainScene::updateSize()
