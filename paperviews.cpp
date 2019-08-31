@@ -297,6 +297,9 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             QRectF boundary = QRectF(tmplineitem->pos().x()/width, (((int)(tmplineitem->pos().y()))%(int)imageheight)/(double)imageheight,
                                      tmplineitem->boundingRect().width()/width, tmplineitem->boundingRect().height()/imageheight);
             lineannotation->setBoundary(boundary);
+            Poppler::Annotation::Style style = Poppler::Annotation::Style(lineannotation->style());
+            style.setWidth(2);
+            lineannotation->setStyle(style);
             QLinkedList<QPointF> points;
             points.append(QPointF(startPoint.x()/width, ((int)startPoint.y())%(int)imageheight/(double)imageheight));
             points.append(QPointF(endPoint.x()/width, ((int)endPoint.y())%(int)imageheight/(double)imageheight));
@@ -328,6 +331,9 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             QRectF boundary = QRectF(tmpellipseitem->pos().x()/width, (((int)(tmpellipseitem->pos().y()))%(int)imageheight)/(double)imageheight,
                                      tmpellipseitem->boundingRect().width()/width, tmpellipseitem->boundingRect().height()/imageheight);
             geomannotation->setBoundary(boundary);
+            Poppler::Annotation::Style style = Poppler::Annotation::Style(geomannotation->style());
+            style.setWidth(2);
+            geomannotation->setStyle(style);
             QLinkedList<QPointF> points;
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
@@ -356,6 +362,9 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             QRectF boundary = QRectF(tmprectitem->pos().x()/width, (((int)(tmprectitem->pos().y()))%(int)imageheight)/(double)imageheight,
                                      tmprectitem->boundingRect().width()/width, tmprectitem->boundingRect().height()/imageheight);
             geomannotation->setBoundary(boundary);
+            Poppler::Annotation::Style style = Poppler::Annotation::Style(geomannotation->style());
+            style.setWidth(2);
+            geomannotation->setStyle(style);
             QLinkedList<QPointF> points;
             points.append(QPointF(startPoint.x()/scale/width, ((int)startPoint.y())%(int)imageheight/scale/imageheight));
             points.append(QPointF(endPoint.x()/scale/width, ((int)endPoint.y())%(int)imageheight/scale/imageheight));
