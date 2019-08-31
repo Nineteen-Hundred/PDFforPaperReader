@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(toolbar->open_action, &QAction::triggered, this, &MainWindow::openNewPDF);
     connect(toolbar->files_action, &QAction::triggered, this, &MainWindow::return_to_front);
 
+    this->showMaximized();
+
     //    loadPageView("/home/pysong/下载/test.pdf");
 }
 
