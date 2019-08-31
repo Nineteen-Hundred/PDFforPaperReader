@@ -2,10 +2,8 @@
 moc_*
 Makefile
 CMakeLists.txt
-PDFforPaperReader
 .qmake.stash
 toc.moc
 poppler-0.77.0/*
 PDFforPaperReader.pro.*
-cache/*
 pdf_config/*
