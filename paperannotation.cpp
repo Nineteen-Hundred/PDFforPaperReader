@@ -304,7 +304,7 @@ PaperAnnotation::LineAnnotation::LineAnnotation(int index, Poppler::LineAnnotati
     startPoint = rwIterator.next();
     rwIterator.toBack();
     endPoint = rwIterator.previous();
-    setPos(annotation->boundary().x()*scale*width, annotation->boundary().y()*scale*height +index*height*scale + PAGE_SPACING * index);
+    setPos(annotation->boundary().x()*scale*width, annotation->boundary().y()*scale*height +index*height*scale);
 }
 
 QPainterPath PaperAnnotation::LineAnnotation::shape() const
@@ -341,13 +341,16 @@ QPainterPath PaperAnnotation::LineAnnotation::shape() const
 
 void PaperAnnotation::LineAnnotation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    qDebug() << boundingRect().width() << boundingRect().height() << boundingRect().x() << boundingRect().y();
     painter->setRenderHint(QPainter::Antialiasing, true);
     QPen pen;
     pen.setColor(annotation->style().color());
     pen.setWidth(annotation->style().width());
     painter->setPen(pen);
-    QLineF line = QLineF(QPointF((startPoint.x()-annotation->boundary().left())*scale*width, (startPoint.y()-annotation->boundary().top())*scale*height),
-                         QPointF((endPoint.x()-annotation->boundary().left())*scale*width, (endPoint.y()-annotation->boundary().top())*scale*height));
+    QLineF line = QLineF(QPointF((startPoint.x()-annotation->boundary().left())*scale*width,
+                                 (startPoint.y()-annotation->boundary().top())*scale*height),
+                         QPointF((endPoint.x()-annotation->boundary().left())*scale*width,
+                                 (endPoint.y()-annotation->boundary().top())*scale*height));
 
     painter->drawLine(line);
 

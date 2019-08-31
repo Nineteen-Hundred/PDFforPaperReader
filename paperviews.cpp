@@ -292,17 +292,28 @@ void MainScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         {
         case LINE:
         {
+            int x1 = startPoint.x();
+            int y1 = startPoint.y();
+            int x2 = endPoint.x();
+            int y2 = endPoint.y();
+
             int index = (int)(tmplineitem->pos().y()/imageheight);
             Poppler::LineAnnotation *lineannotation = new Poppler::LineAnnotation(Poppler::LineAnnotation::StraightLine);
-            QRectF boundary = QRectF(tmplineitem->pos().x()/width, (((int)(tmplineitem->pos().y()))%(int)imageheight)/(double)imageheight,
-                                     tmplineitem->boundingRect().width()/width, tmplineitem->boundingRect().height()/imageheight);
+//            QRectF boundary = QRectF(tmplineitem->pos().x()/width,
+//                                     (((int)(tmplineitem->pos().y()))%(int)imageheight)/(double)imageheight,
+//                                     tmplineitem->boundingRect().width()/width,
+//                                     tmplineitem->boundingRect().height()/imageheight);
+            QRectF boundary = QRectF(fmin(x1,x2)/width,
+                                     ((int)fmin(y1, y2)%imageheight)/(double)imageheight,
+                                     abs(x1-x2)/(double)width,
+                                     abs(y1-y2)/(double)imageheight);
             lineannotation->setBoundary(boundary);
             Poppler::Annotation::Style style = Poppler::Annotation::Style(lineannotation->style());
             style.setWidth(2);
             lineannotation->setStyle(style);
             QLinkedList<QPointF> points;
-            points.append(QPointF(startPoint.x()/width, ((int)startPoint.y())%(int)imageheight/(double)imageheight));
-            points.append(QPointF(endPoint.x()/width, ((int)endPoint.y())%(int)imageheight/(double)imageheight));
+            points.append(QPointF(x1/width, ((int)y1)%(int)imageheight/(double)imageheight));
+            points.append(QPointF(x2/width, ((int)y2)%(int)imageheight/(double)imageheight));
             lineannotation->setLinePoints(points);
             lineannotation->style().setWidth(4);
             lineannotation->setFlags(Poppler::Annotation::Hidden);
