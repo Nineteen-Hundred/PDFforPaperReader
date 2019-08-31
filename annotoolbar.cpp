@@ -102,7 +102,7 @@ void AnnoToolbar::pdfStatus()
     {
         group.at(i)->setEnabled(true);
     }
-    saving_action->setEnabled(true);
+    //saving_action->setEnabled(true);
     saving_as_action->setEnabled(true);
     print_action->setEnabled(true);
     preview_action->setEnabled(true);
