@@ -7,3 +7,4 @@ toc.moc
 poppler-0.77.0/*
 PDFforPaperReader.pro.*
 pdf_config/*
+cache/*
