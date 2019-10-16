@@ -8,13 +8,13 @@ Bamboo多功能PDF阅读器用于PDF文档的打开和编辑，主要由文档�
 
 文档收藏系统主要用于提供不同位置目录的快捷入口，配合云盘工具（如坚果云）后，可以实现快速打开以及修改自动同步到云的功能。
 
-<img src="http://images.xdusoft.com/2019101601.png" width=70% height=70% />
+<img src="http://images.xdusoft.com/2019101602.png" width=70% height=70% />
 
 ## 笔记系统
 
 本阅读器支持文本、几何（圆形、方形）、箭头及注释笔记的创建和编辑。选中笔记后，左键拖动可改变笔记位置，右键点击可弹出对话框，以修改笔记的各类参数。
 
-<img src="http://images.xdusoft.com/2019101602.png" width=40% height=40% />
+<img src="http://images.xdusoft.com/2019101601.png" width=40% height=40% />
 
 ## 概览模式
 
