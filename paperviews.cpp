@@ -558,7 +558,7 @@ void MainScene::removeCertainItem()
 
 void MainScene::savePDF()
 {
-    //    regenerate_annotations();
+    regenerate_annotations();
 
     QString tmpfilename = "tmp_file.pdf";
     Poppler::PDFConverter *converter = document->document->pdfConverter();
@@ -623,6 +623,7 @@ void MainScene::regenerate_annotations()
 {
     for(int i=0; i<this->annotations.length(); i++)
     {
+        annotations.at(i)->return_annotation()->setFlags(Poppler::Annotation::FixedSize);
         document->document->page(annotations.at(i)->index)->addAnnotation(annotations.at(i)->return_annotation());
     }
     for(int i=0; i<document->document->numPages(); i++)
