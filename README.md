@@ -32,7 +32,6 @@ Bamboo多功能PDF阅读器用于PDF文档的打开和编辑，主要由文档�
 * **Song**：系统设计、页面及笔记系统
 
 * **ink19**：文件收藏系统
-* <a href='mailto:pysong.xidian@gmail.com'>Join Us</a>
 
 ## License
 
